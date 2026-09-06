@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TabWidget
 import android.widget.TextView
 import androidx.core.view.children
+import com.owo233.tcqt.R
 import com.owo233.tcqt.utils.log.Log
 import java.lang.ref.WeakReference
 import kotlin.math.abs
@@ -40,27 +41,30 @@ internal object GlassBarInstaller {
     /** 原生底栏的隐藏窗口期上限，超时后交还，避免闪烁变永久不可见。 */
     private const val REVEAL_TIMEOUT_MS = 8000L
 
-    /** 药丸底边距屏幕底边的距离（dp）。 */
-    private const val FLOAT_OFFSET_DP = 12f
-
     /** 内容定宽后每个 Tab 两侧的呼吸空间（dp）。 */
     private const val TAB_BREATHING_DP = 32f
 
+    /** KernelSU FloatingBottomBar geometry baseline. */
+    private const val BAR_HEIGHT_DP = 64f
+    private const val TAB_MIN_WIDTH_DP = 76f
+
     /** 浮动药丸距屏幕左右边缘的最小留白（dp）。 */
-    private const val SCREEN_MARGIN_DP = 24f
+    private const val SCREEN_MARGIN_DP = 28f
 
     /** 纯图标模式（标签被外置开关隐藏）下的内容基准宽度（dp）。 */
     private const val ICON_ONLY_BASIS_DP = 24f
 
     /** 列表末行越过药丸后的额外余量（dp）。 */
     private const val LAST_ROW_GAP_DP = 8f
+    private val PAGE_EXTEND_RETRY_TAG = R.id.tcqt_tag_page_extend_retry
+    private const val PAGE_EXTEND_RETRY_DELAY_MS = 100L
 
     /** 逐帧复用坐标缓冲；全部调用位于 UI 线程。 */
     private val tmpLoc = IntArray(2)
 
     /** 可逆几何修改的视图 tag 键。 */
-    private const val EXTEND_TAG = 0x7F5A0002
-    private const val ICON_TRANSLATION_TAG = 0x7F5A0003
+    private val EXTEND_TAG = R.id.tcqt_tag_extend
+    private val ICON_TRANSLATION_TAG = R.id.tcqt_tag_icon_translation
 
     // ---- 安装状态：以弱引用持有宿主视图，Activity 重建后自动失效并重装 ----
 
@@ -196,13 +200,17 @@ internal object GlassBarInstaller {
 
         val context = tabView.context
         val density = context.resources.displayMetrics.density
-        val floatOffset = (density * FLOAT_OFFSET_DP).roundToInt()
+        val initialInset = currentNavInset(tabView)
+        val floatOffset = floatingOffset(FloatingBottomBarConfigStore.read().position, initialInset, density)
 
         // 导航栏内边距须在底栏尚处原位时读取：底栏即将被摘出，
         // 摘出后的视图不再上报任何内边距。
         val navigationReserve = tabView.paddingBottom
         val tabRow = QQTabLocator.findTabRow(tabView)
-        val resolvedHeight = contentBarHeight(tabRow, tabView.height - navigationReserve)
+        val resolvedHeight = max(
+            (BAR_HEIGHT_DP * density).roundToInt(),
+            contentBarHeight(tabRow, tabView.height - navigationReserve),
+        )
 
         val host = GlassBarHostLayout(context, backdrop, tabView)
         host.setupShadow(host.isDarkTheme)
@@ -270,7 +278,7 @@ internal object GlassBarInstaller {
 
         // 宿主自身已按边到边布局，导航栏内边距无条件计入锚点。
         val inset = rememberNavigationInset(parent)
-        hostParams.bottomMargin = floatOffset - shadowPad + inset
+        hostParams.bottomMargin = floatingOffset(FloatingBottomBarConfigStore.read().position, inset, density) - shadowPad + inset
         host.layoutParams = hostParams
         host.post { syncHostBottomInset(host, navigationInset) }
 
@@ -726,11 +734,14 @@ internal object GlassBarInstaller {
         if (widest <= 0) return null
 
         val horizontalPad = (density * 4f).roundToInt()
-        var tabWidth = widest + (density * TAB_BREATHING_DP).roundToInt()
+        var tabWidth = max(
+            (density * TAB_MIN_WIDTH_DP).roundToInt(),
+            widest + (density * TAB_BREATHING_DP).roundToInt(),
+        )
         val screen = tabRow.resources.displayMetrics.widthPixels
-        val maxTotal = screen - (density * SCREEN_MARGIN_DP).roundToInt()
+        val maxTotal = screen - (density * SCREEN_MARGIN_DP).roundToInt() * 2
         if (tabWidth * count + horizontalPad * 2 > maxTotal) {
-            tabWidth = (maxTotal - horizontalPad * 2) / count
+            tabWidth = max(1, (maxTotal - horizontalPad * 2) / count)
         }
 
         for (tab in tabRow.children) {
@@ -905,6 +916,17 @@ internal object GlassBarInstaller {
      */
     private fun extendPagesToBottom(pager: ViewGroup?) {
         if (pager == null) return
+        if (isPagerMoving(pager)) {
+            if (pager.getTag(PAGE_EXTEND_RETRY_TAG) != true) {
+                pager.setTag(PAGE_EXTEND_RETRY_TAG, true)
+                pager.postDelayed({
+                    pager.setTag(PAGE_EXTEND_RETRY_TAG, false)
+                    extendPagesToBottom(pager)
+                }, PAGE_EXTEND_RETRY_DELAY_MS)
+            }
+            return
+        }
+        pager.setTag(PAGE_EXTEND_RETRY_TAG, false)
         val pagerParent = pager.parent as? ViewGroup
         if (pagerParent != null) stretchToBottom(pager, pagerParent.height)
         val target = pager.height
@@ -915,6 +937,14 @@ internal object GlassBarInstaller {
             }
         }
     }
+
+    /** 页面滚动期间不改子页尺寸，避免与 ViewPager2 的 attach/measure 竞态。 */
+    private fun isPagerMoving(pager: ViewGroup): Boolean = runCatching {
+        val state = pager.javaClass.methods.firstOrNull {
+            it.name == "getScrollState" && it.parameterTypes.isEmpty()
+        }?.invoke(pager) as? Int ?: return@runCatching false
+        state != 0
+    }.getOrDefault(false)
 
     private fun extendOnePage(page: ViewGroup, targetHeight: Int) {
         val pageHeight = max(page.height, targetHeight)
@@ -1179,10 +1209,16 @@ internal object GlassBarInstaller {
     private fun syncHostBottomInset(host: GlassBarHostLayout, inset: Int) {
         val lp = host.layoutParams as? FrameLayout.LayoutParams ?: return
         val density = host.resources.displayMetrics.density
-        val desired = (density * FLOAT_OFFSET_DP).roundToInt() - host.shadowPad + max(0, inset)
+        val desired = floatingOffset(FloatingBottomBarConfigStore.read().position, inset, density) - host.shadowPad + max(0, inset)
         if (lp.bottomMargin == desired) return
         lp.bottomMargin = desired
         host.layoutParams = lp
         Log.i("药丸底部锚点已刷新: inset=$inset margin=$desired")
     }
+
+    private fun floatingOffset(
+        position: FloatingBottomBarPosition,
+        inset: Int,
+        density: Float,
+    ): Int = (position.offsetDp(inset != 0) * density).roundToInt()
 }

@@ -47,7 +47,11 @@ class SettingViewModel : ViewModel() {
     private val featureByKey: Map<String, SettingFeature> = allFeatures.associateBy { it.key }
 
     private val optionGroupByKey: Map<String, FeatureOptionGroup> = allFeatures
-        .mapNotNull { it.optionGroup }
+        .flatMap { it.optionGroups }
+        .associateBy { it.key }
+
+    private val sliderByKey: Map<String, FeatureSliderField> = allFeatures
+        .flatMap { it.sliders }
         .associateBy { it.key }
 
     // ───── Category tree ─────
@@ -311,6 +315,18 @@ class SettingViewModel : ViewModel() {
         }
     }
 
+    /** Slider 值按自身 min/max 收敛后进入待保存状态。 */
+    fun setSliderValue(key: String, value: Int) {
+        val slider = sliderByKey[key]
+        val clamped = slider?.let { value.coerceIn(it.min, it.max) } ?: value
+        val persisted = persistedInts[key] ?: 0
+        if (clamped == persisted) pendingInts.remove(key) else pendingInts[key] = clamped
+
+        if (isSearchActive && searchQuery.isNotBlank()) {
+            pendingKeywordsToSave.add(searchQuery.trim())
+        }
+    }
+
     fun setTextValue(key: String, value: String) {
         val persisted = persistedStrings[key].orEmpty()
         if (value == persisted) {
@@ -540,8 +556,19 @@ class SettingViewModel : ViewModel() {
             enabled = initReady && effectiveBoolean(feature.key),
             expanded = expandedKeys[feature.key] == true,
             hasPending = hasPendingFor(feature),
-            optionGroup = feature.optionGroup,
-            optionValue = feature.optionGroup?.let(::currentOptionValue),
+            optionGroups = feature.optionGroups,
+            optionValues = feature.optionGroups.associate { it.key to currentOptionValue(it) },
+            sliders = feature.sliders.map { field ->
+                FeatureSliderUiState(
+                    key = field.key,
+                    label = field.label,
+                    min = field.min,
+                    max = field.max,
+                    step = field.step,
+                    suffix = field.suffix,
+                    value = effectiveInt(field.key, field.defaultValue).coerceIn(field.min, field.max)
+                )
+            },
             textAreas = feature.textAreas.map { area ->
                 TextAreaUiState(
                     key = area.key,
@@ -560,7 +587,8 @@ class SettingViewModel : ViewModel() {
 
     private fun hasPendingFor(feature: SettingFeature): Boolean {
         if (pendingBooleans.containsKey(feature.key)) return true
-        if (feature.optionGroup != null && pendingInts.containsKey(feature.optionGroup.key)) return true
+        if (feature.optionGroups.any { pendingInts.containsKey(it.key) }) return true
+        if (feature.sliders.any { pendingInts.containsKey(it.key) }) return true
         return feature.textAreas.any { pendingStrings.containsKey(it.key) }
     }
 
