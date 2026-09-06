@@ -40,6 +40,7 @@ class GetSign : IAction, DexKitTask, InputRootInitCallback {
     private var pendingEditText: EditText? = null
     private var pendingSendBtn: Button? = null
     private var cachedSource32: String? = null
+    private var backupString: String? = null
 
     private val signer by lazy {
         val method = requireMethod("getSign")
@@ -95,8 +96,7 @@ class GetSign : IAction, DexKitTask, InputRootInitCallback {
                 val error = intent.getStringExtra("error")
                 if (error != null) {
                     SyncUtils.runOnUiThread {
-                        val target = pendingEditText ?: getAIOEditText()
-                        target?.setText("签名获取失败: $error")
+                        getTargetEditText()?.setText("签名获取失败: $error")
                         restoreSendBtn()
                         pendingEditText = null
                     }
@@ -109,13 +109,15 @@ class GetSign : IAction, DexKitTask, InputRootInitCallback {
                     cachedSource32 = source32
                 }
                 SyncUtils.runOnUiThread {
-                    val target = pendingEditText ?: getAIOEditText()
+                    val target = getTargetEditText()
                     if (target != null) {
                         val base = "${HookEnv.versionName} $sign"
-                        val withSource32 = shouldScanSource32() &&
-                            source32 != null &&
-                            source32.length == SOURCE32_LENGTH * 2
-                        target.setText(if (withSource32) "$base $source32" else base)
+                        val withSource32 = source32 != null && source32.length == SOURCE32_LENGTH * 2
+                        if (shouldScanSource32()) {
+                            target.setText(if (withSource32) "$base $source32" else backupString)
+                        } else {
+                            target.setText(base)
+                        }
                     }
                     restoreSendBtn()
                     pendingEditText = null
@@ -126,6 +128,8 @@ class GetSign : IAction, DexKitTask, InputRootInitCallback {
         ReceiverRegistry.register(app, resultReceiver, filter)
     }
 
+    private fun getTargetEditText() = pendingEditText ?: getAIOEditText()
+
     @SuppressLint("SetTextI18n")
     override fun onBtnLongClick(
         sendBtn: Button,
@@ -133,8 +137,8 @@ class GetSign : IAction, DexKitTask, InputRootInitCallback {
     ) {
         pendingEditText = editText
 
-        val userInput = editText.text?.toString()?.trim() ?: ""
-        val cmd = if (userInput.length >= 13) userInput else "MessageSvc.PbSendMsg"
+        val userInput = (editText.text?.toString() ?: "").also { backupString = it }
+        val cmd = if (userInput.trim().isNotEmpty()) userInput else "MessageSvc.PbSendMsg"
 
         val needSource32 = shouldScanSource32()
         val waitingForScan = needSource32 && cachedSource32 == null
@@ -176,8 +180,6 @@ class GetSign : IAction, DexKitTask, InputRootInitCallback {
                 runCatching {
                     val uin = intent.getStringExtra("uin") ?: "0"
                     val cmd = intent.getStringExtra("cmd")
-                        ?.takeIf { it.isNotBlank() }
-                        ?: "MessageSvc.PbSendMsg"
                     val buffer = "000000160A08120608D48BCAE5031206080110001800".hex2ByteArray()
                     val seq = MsfService.getCore().nextSeq
                     val toServiceMsg: ToServiceMsg = createToServiceMsg(uin = uin).apply {
@@ -240,11 +242,11 @@ class GetSign : IAction, DexKitTask, InputRootInitCallback {
     }
 
     private fun restoreSendBtn() {
-        val btn = pendingSendBtn ?: return
-        pendingSendBtn = null
-        btn.isEnabled = true
-        val editText = pendingEditText ?: getAIOEditText() ?: return
-        editText.isEnabled = true
+        pendingSendBtn?.let {
+            it.isEnabled = true
+            pendingSendBtn = null
+        }
+        getTargetEditText()?.isEnabled = true
     }
 
     override fun getCacheKeys(): Set<String> {
