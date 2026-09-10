@@ -6,7 +6,7 @@ import com.tencent.mobileqq.mini.servlet.MiniAppSSOCmdHelper
 internal object MiniSvc {
 
     fun judgeTiming() {
-        // 这些定义注释都是AI解释的,不知道对不对,管它呢 (能用就行了)
+        // 以下字段含义为 AI 解释，未必准确
         val req = INTERFACE.StJudgeTimingReq().apply {
             appid.set("1112173744") // 小程序的 AppID
             factType.set(13) // 代表定时上报

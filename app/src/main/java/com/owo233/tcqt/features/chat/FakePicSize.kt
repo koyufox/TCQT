@@ -10,18 +10,6 @@ import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import com.tencent.qqnt.kernelpublic.nativeinterface.Contact
 
-/**
- * 迁移到 api 门面的原型功能（S2a）。
- *
- * 改造前后对比：
- * - 框架 import 从 8 行降到 **3 行**（`api.*` + `core.reflect.findMethod` +
- *   `core.hook.hookBefore`）。要降到 1 行需要 S3 的 hook DSL —— 本原型做不到，
- *   G1 的"≤1 行"验收仍归 S3。
- * - 配置项声明与读取不再各写一遍 key，`TCQTSetting.getInt("fake_pic_size.type")`
- *   变成直接读委托属性 `type`
- * - 持久化 key 逐字未变：`fake_pic_size` / `fake_pic_size.type` /
- *   `fake_pic_size.custom_width` / `fake_pic_size.custom_height`
- */
 @RegisterAction
 object FakePicSize : Feature(
     key = "fake_pic_size",

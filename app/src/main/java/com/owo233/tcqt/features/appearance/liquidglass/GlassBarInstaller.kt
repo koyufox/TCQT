@@ -23,14 +23,12 @@ import kotlin.math.roundToInt
 /**
  * 玻璃栏的安装与生命周期协调。
  *
- * 核心思路是「布局手术」而非重建：宿主的内容区本就铺满全屏、底栏以
- * bottom 定位悬浮其上，因此只需把底栏整体搬入浮动容器，清空其自带的
- * 不透明底色，玻璃折射的背景天然成立。原生 Tab 的红点、未读数、长按
- * 菜单等能力全部保留，仅外观被重塑。
+ * 核心是「布局手术」而非重建：宿主内容区本就铺满全屏、底栏以 bottom 定位悬浮其上，
+ * 只需把底栏整体搬入浮动容器并清空其自带的不透明底色，玻璃折射的背景天然成立。
+ * 原生 Tab 的红点、未读数、长按菜单等能力全部保留，仅外观被重塑。
  *
- * 安装触发有两条通路：底栏切换方法的一次调用（首次选中初始 Tab 时
- * 底栏必然已存在），以及主界面恢复后的限时轮询兜底（冷启动时底栏
- * 可能数秒后才出现）。
+ * 安装触发有两条通路：底栏切换方法的一次调用（首次选中初始 Tab 时底栏必然已存在），
+ * 以及主界面恢复后的限时轮询兜底（冷启动时底栏可能数秒后才出现）。
  */
 internal object GlassBarInstaller {
 
@@ -106,9 +104,9 @@ internal object GlassBarInstaller {
     /**
      * 在原生底栏被接管前保持其不可见，消除冷启动时原底栏的闪现。
      *
-     * 在 pre-draw（内容上屏前最后一站）按类名匹配底栏并压低透明度；
-     * 同时隐藏宿主自绘的毛玻璃长条——它独立于底栏存在，底栏淡出期间
-     * 仍会以灰条形式横亘屏幕底部。超时未接管则原样交还。
+     * 在 pre-draw（内容上屏前最后一站）按类名匹配底栏并压低透明度；同时隐藏宿主自绘
+     * 的毛玻璃长条——它独立于底栏存在，底栏淡出期间仍会以灰条横亘屏幕底部。
+     * 超时未接管则原样交还。
      */
     private fun hideStockBarUntilInstalled(decor: View) {
         decor.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
@@ -144,9 +142,8 @@ internal object GlassBarInstaller {
         runCatching {
             if (activity.isFinishing || activity.isDestroyed) return
 
-            // 仅当药丸存活于「当前窗口」时才跳过：进程可能比被划走的
-            // 界面活得久，残留的引用若被视作已安装，重启的主界面
-            // 将停留在原生底栏上。
+            // 仅当药丸存活于「当前窗口」时才跳过：进程可能比被划走的界面活得久，
+            // 残留引用若被视作已安装，重启的主界面将停留在原生底栏上。
             val live = hostRef.get()
             if (live != null && live.isAttachedToWindow && live.rootView === decor.rootView) return
             if (live != null) resetState()
@@ -203,8 +200,7 @@ internal object GlassBarInstaller {
         val initialInset = currentNavInset(tabView)
         val floatOffset = floatingOffset(FloatingBottomBarConfigStore.read().position, initialInset, density)
 
-        // 导航栏内边距须在底栏尚处原位时读取：底栏即将被摘出，
-        // 摘出后的视图不再上报任何内边距。
+        // 导航栏内边距须在底栏尚处原位时读取：摘出后的视图不再上报任何内边距。
         val navigationReserve = tabView.paddingBottom
         val tabRow = QQTabLocator.findTabRow(tabView)
         val resolvedHeight = max(
@@ -230,8 +226,7 @@ internal object GlassBarInstaller {
             gravity = android.view.Gravity.TOP or android.view.Gravity.FILL_HORIZONTAL
         }
 
-        // 结构性迁移必须是原子事务：所有可能失败的准备已在上方完成，
-        // 此处失败则按原索引放回，底栏绝不悬空。
+        // 结构性迁移必须是原子事务：所有可能失败的准备已在上方完成，此处失败则按原索引放回。
         runCatching {
             parent.removeView(tabView)
             parent.addView(host, index, hostParams)
@@ -348,8 +343,8 @@ internal object GlassBarInstaller {
             )
             droplet.setPill(glass)
 
-            // 液滴按住时越出药丸边界：FrameLayout 默认裁剪到内边距，
-            // 宿主又带投影内边距，必须双重关闭裁剪。
+            // 液滴按住时会越出药丸边界：FrameLayout 默认裁剪到内边距，宿主又带投影内边距，
+            // 必须双重关闭裁剪。
             host.clipChildren = false
             host.clipToPadding = false
 
@@ -440,10 +435,7 @@ internal object GlassBarInstaller {
         }
     }
 
-    /**
-     * 底栏切换方法每次调用时回调：既是普通切页的液滴驱动，
-     * 也是本进程首次（或界面重建后）的安装触发点。
-     */
+    /** 底栏切换方法每次调用时回调：既是普通切页的液滴驱动，也是本进程首次（或界面重建后）的安装触发点。 */
     fun onTabChanged(tabView: View, index: Int) {
         var host = hostRef.get()
         if (host != null && !host.isAttachedToWindow) {
@@ -479,8 +471,7 @@ internal object GlassBarInstaller {
     }
 
     /**
-     * 依据 Tab 尺寸设定液滴的尺寸与纵向位置；横向位置与全部运动
-     * 归手势驱动的弹簧管理。
+     * 依据 Tab 尺寸设定液滴的尺寸与纵向位置；横向位置与全部运动归手势驱动的弹簧管理。
      */
     private fun syncDropletSize(index: Int) {
         runCatching {
@@ -512,8 +503,8 @@ internal object GlassBarInstaller {
     // ---- 逐帧维持 ----
 
     /**
-     * 皮肤刷新会重建或重新点亮底栏装饰，pre-draw 每帧重扫兄弟列表，
-     * 覆盖「重新显示的实例」与「被替换的新实例」两种情况。
+     * 皮肤刷新会重建或重新点亮底栏装饰：pre-draw 每帧重扫兄弟列表，
+     * 覆盖「重新显示的实例」与「被替换的新实例」。
      */
     private fun holdOwnBarChromeHidden(host: GlassBarHostLayout) {
         val parent = host.parent as? ViewGroup
@@ -537,10 +528,7 @@ internal object GlassBarInstaller {
         Log.i("宿主重新点亮了自绘装饰层，已保持隐藏: ${view.javaClass.simpleName}")
     }
 
-    /**
-     * 皮肤刷新会恢复底栏的导航预留与停靠高度；拓扑指纹刻意不含几何，
-     * 该不变量单独在 pre-draw 路径上维持。
-     */
+    /** 皮肤刷新会恢复底栏的导航预留与停靠高度；拓扑指纹刻意不含几何，该不变量单独在 pre-draw 路径上维持。 */
     private fun restoreBarContentHeight(host: GlassBarHostLayout): Boolean {
         val tabView = tabViewRef.get() ?: return false
         var changed = dropNavigationReserve(tabView) > 0
@@ -595,9 +583,8 @@ internal object GlassBarInstaller {
     // ---- 结构刷新 ----
 
     /**
-     * 行拓扑指纹：包含身份与 LayoutParams 标识，刻意排除随布局变化的
-     * 几何量；宿主可在运行时增删 Tab 或替换内部行容器，指纹变化即触发
-     * 重新定宽与重新绑定。
+     * 行拓扑指纹：包含身份与 LayoutParams 标识，刻意排除随布局变化的几何量。
+     * 宿主可在运行时增删 Tab 或替换内部行容器，指纹变化即触发重新定宽与重新绑定。
      */
     private fun tabStructureSignature(tabRow: ViewGroup?): Int {
         if (tabRow == null) return 0
@@ -626,7 +613,6 @@ internal object GlassBarInstaller {
 
     /**
      * 结构需要刷新时投递修复（LayoutParams 变更须干净的布局回合）。
-     *
      * @return true 表示观察器应等待新行重新绑定
      */
     private fun scheduleStructureRefreshIfNeeded(host: GlassBarHostLayout): Boolean {
@@ -699,10 +685,8 @@ internal object GlassBarInstaller {
     /**
      * 把宿主的等分 Tab 列替换为按内容定宽的列。
      *
-     * 等分宽度只在底栏横贯屏幕时有意义；浮动药丸需以内容为准。
-     * 无界的 UNSPECIFIED 测量可能返回大于已布局槽位的无意义值
-     * （MATCH_PARENT 子项在无界规格下行为未定义），此时弃用该值，
-     * 改以叶子视图的实际宽度为准；两者取宽者作为列内容宽。
+     * 无界的 UNSPECIFIED 测量可能返回大于已布局槽位的无意义值（MATCH_PARENT 子项在
+     * 无界规格下行为未定义），此时弃用该值，改以叶子视图的实际宽度为准；两者取宽者。
      */
     private fun hugContentWidth(tabRow: ViewGroup?, density: Float): Int? {
         if (tabRow == null || tabRow.isEmpty()) return null
@@ -761,9 +745,7 @@ internal object GlassBarInstaller {
 
     /**
      * Tab 列内最宽可见叶子的宽度。
-     *
-     * MATCH_PARENT 的叶子只与其所在列同宽，说明不了内容宽度
-     * （图标填满整列而图形只有其几分之一），直接不计入。
+     * MATCH_PARENT 的叶子只与所在列同宽，说明不了内容宽度，直接不计入。
      */
     private fun leafContentWidth(view: View): Int {
         if (view.visibility != View.VISIBLE) return 0
@@ -778,9 +760,8 @@ internal object GlassBarInstaller {
 
     /**
      * 内容对称的底栏高度。
-     *
-     * 底栏自身高度在边到边布局下不可信（导航预留可能以不同途径混入），
-     * 以图标到列顶的间距为基准上下对称推算，且只缩小不放大。
+     * 边到边布局下底栏自身高度不可信（导航预留可能以不同途径混入），以图标到列顶的
+     * 间距为基准上下对称推算，且只缩小不放大。
      */
     private fun contentBarHeight(tabRow: ViewGroup?, fallback: Int): Int {
         if (tabRow == null || fallback <= 0) return fallback
@@ -910,10 +891,7 @@ internal object GlassBarInstaller {
 
     // ---- 页面延伸 ----
 
-    /**
-     * 把每个页面拉伸至屏幕底部并给滚动容器补充底部留白，
-     * 使列表末行能滚过药丸下方、内容透过玻璃持续可见。
-     */
+    /** 把每个页面拉伸至屏幕底部并给滚动容器补充底部留白，使列表末行能滚过药丸下方。 */
     private fun extendPagesToBottom(pager: ViewGroup?) {
         if (pager == null) return
         if (isPagerMoving(pager)) {
@@ -1008,10 +986,8 @@ internal object GlassBarInstaller {
 
     /**
      * 丢弃以滚动容器父级 padding 形式存在的底栏预留。
-     *
-     * 动态页的整高容器带大额底部 padding，MATCH_PARENT 的信息流
-     * 因此停在页内高处；信息流自身另有滚动留白，该外层预留
-     * 须与页面级预留一同丢弃。
+     * 动态页的整高容器带大额底部 padding，MATCH_PARENT 的信息流会停在页内高处；
+     * 信息流自身另有滚动留白，该外层预留须与页面级预留一同丢弃。
      */
     private fun dropParentBottomReserve(parent: ViewGroup, child: View) {
         val gap = parent.height - child.bottom
@@ -1030,10 +1006,7 @@ internal object GlassBarInstaller {
         )
     }
 
-    /**
-     * 为子树内所有滚动容器补充底部留白并关闭 padding 裁剪，
-     * 使内容行透过留白带（即药丸后方与下方）持续渲染。
-     */
+    /** 为子树内所有滚动容器补充底部留白并关闭 padding 裁剪，使内容行透过留白带（药丸后方与下方）持续渲染。 */
     private fun padScrollersBottom(root: ViewGroup, pad: Int, depth: Int) {
         if (depth > 12) return
         for (child in root.children) {
@@ -1107,10 +1080,7 @@ internal object GlassBarInstaller {
 
     // ---- 背景与装饰清理 ----
 
-    /**
-     * 玻璃折射的背景兄弟容器：底栏与页面容器同处一个 FrameLayout，
-     * 取面积最大的可见兄弟。
-     */
+    /** 玻璃折射的背景兄弟容器：底栏与页面容器同处一个 FrameLayout，取面积最大的可见兄弟。 */
     private fun findBackdrop(parent: ViewGroup, tabView: View): ViewGroup? {
         var best: ViewGroup? = null
         var bestArea = 0
@@ -1162,9 +1132,8 @@ internal object GlassBarInstaller {
     /**
      * 隐藏底栏顶部的发丝线。
      *
-     * 它是底栏的兄弟视图（1px 全宽纯色 View），底栏内清空背景触及不到，
-     * 底栏浮动后会以一条横线残留在页面上；按形状而非类名匹配——
-     * 该类名过于通用。
+     * 它是底栏的兄弟视图（1px 全宽纯色 View），底栏内清空背景触及不到，浮动后会以一条
+     * 横线残留在页面上；按形状而非类名匹配，该类名过于通用。
      */
     private fun hideBarHairline(parent: ViewGroup, tabView: View) {
         val density = parent.resources.displayMetrics.density

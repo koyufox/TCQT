@@ -30,9 +30,7 @@ object RemoveShareLimit : Feature(
     private lateinit var selectTroopListFragmentCls: Class<*>
 
 
-    /**
-     * 只在打开转发选择页时才会被调用，放到 BACKGROUND 错峰安装。
-     */
+    /** 只在打开转发选择页时才会被调用，放到 BACKGROUND 错峰安装。 */
 
     private val isKuiklyUISupported: Boolean by lazy {
         HookEnv.requireMinQQVersion(QQVersion.QQ_9_2_25)

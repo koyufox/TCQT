@@ -33,10 +33,7 @@ internal data class FloatingBottomBarConfig(
     val position: FloatingBottomBarPosition = FloatingBottomBarPosition.MODERATE,
 )
 
-/**
- * Shared configuration contract for the settings UI and the host process.
- * Missing values deliberately resolve to the old implementation and full blur.
- */
+/** Settings-UI/host config contract; missing values fall back to the old implementation and full blur. */
 internal object FloatingBottomBarConfigStore {
     const val IMPLEMENTATION_KEY = "liquid_glass_tab_bar.implementation"
     const val MODE_KEY = "liquid_glass_tab_bar.mode"

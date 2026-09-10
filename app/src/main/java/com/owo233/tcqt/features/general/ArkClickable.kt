@@ -11,7 +11,6 @@ object ArkClickable : Feature(
     key = "ark_clickable",
     name = "允许打开Ark消息",
     desc = "仅TIM可用，绕过部分Ark卡片消息禁止访问（请到最新版本QQ使用）的限制。",
-    // 原 `onInit() = HookEnv.isTIM()`
     requires = Requires(host = Requires.Host.TimOnly),
 ) {
 

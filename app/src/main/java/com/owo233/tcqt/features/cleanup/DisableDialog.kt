@@ -37,7 +37,6 @@ object DisableDialog : Feature(
     processes = setOf(ActionProcess.MAIN),
 ) {
 
-    /** 属性名沿用原来的 `options`；派生 key = `disable_dialog.type`。 */
     private val options by multiIntOption(
         settingKey = "type",
         name = "可选项",
@@ -45,8 +44,6 @@ object DisableDialog : Feature(
         options = listOf("屏蔽灰度版本体验", "屏蔽社交封禁提醒", "屏蔽版本升级弹窗"),
     )
 
-    // 原 `companion object` 的成员：`class` 改 `object` 后 companion 不再合法，
-    // 直接作为 object 的成员。
     private val isShowMap = ConcurrentHashMap<String, Boolean>()
 
     override fun install() {

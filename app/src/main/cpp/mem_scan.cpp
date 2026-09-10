@@ -379,7 +379,7 @@ namespace {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_owo233_tcqt_hooks_func_fekit_GetSign_nativeScanSource32(
+Java_com_owo233_tcqt_features_debug_GetSign_nativeScanSource32(
         JNIEnv* env,
         jobject /* thiz */) {
 

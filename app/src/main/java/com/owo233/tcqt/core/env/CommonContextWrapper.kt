@@ -81,18 +81,6 @@ class CommonContextWrapper @JvmOverloads constructor(
             }
         }
 
-        /*fun isMaterialDesignContext(context: Context): Boolean {
-            if (!isAppCompatContext(context)) return false
-
-            val attrs = intArrayOf(com.google.android.material.R.attr.colorPrimaryVariant)
-            val a = context.obtainStyledAttributes(attrs)
-            return try {
-                a.hasValue(0)
-            } finally {
-                a.recycle()
-            }
-        }*/
-
         fun checkContextClassLoader(context: Context): Boolean {
             val cl = context.classLoader ?: return false
             return try {

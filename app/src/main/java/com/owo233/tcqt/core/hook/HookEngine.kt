@@ -37,11 +37,7 @@ interface IHookEngine {
     val frameworkVersionCode: Long
     val bridgeClass: Class<*>?
 
-    /**
-     * 当前引擎是否运行在兼容模式（仅 Zygisk 引擎会返回 true）。
-     *
-     * 带默认值，既有实现（Legacy / Modern）无需改动即可编译。
-     */
+    /** 当前引擎是否运行在兼容模式（仅 Zygisk 引擎返回 true），默认 false。 */
     val isCompatMode: Boolean get() = false
 
     fun hookBefore(method: Member, priority: Int = 50, callback: (HookParam) -> Unit): Unhook
@@ -57,9 +53,7 @@ interface IHookEngine {
 /**
  * `IHookEngine.frameworkName` 的已知取值。
  *
- * 存在的理由：功能侧曾用 `engine !is ZygiskHookEngine` 判断引擎种类，
- * 这使 `features` 必须 import `loader.zygisk`。改为比较 `frameworkName`
- * 后，功能只需要 core 里的这个常量。
+ * 功能侧判断引擎种类请比较这些常量，不要 `is` 判断具体引擎类（会让 `features` 依赖 `loader`）。
  */
 object HookFramework {
 

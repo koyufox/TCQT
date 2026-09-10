@@ -36,9 +36,8 @@ data class ActionPlan(
 /**
  * 运行时 Action 注册表：实例缓存、启动计划与执行。
  *
- * 本类**不得**依赖 `ui` / `host` / `loader` —— 它是启动路径的一部分。
- * UI 元数据（`getAllFeatures` / `isInitReady` / `getSettingDesc`）在
- * `ui.settings.FeatureCatalog`；配置注册在 `core.config.SettingsRegistry`。
+ * 本类**不得**依赖 `ui` / `host` / `loader` —— 它是启动路径的一部分。UI 元数据在
+ * `ui.settings.FeatureCatalog`，配置注册在 `core.config.SettingsRegistry`。
  */
 internal object ActionRegistry {
 
@@ -51,10 +50,7 @@ internal object ActionRegistry {
 
     private val failedActions = ConcurrentHashMap.newKeySet<Class<out ActionSpec>>()
 
-    /**
-     * key -> ActionClass。仅设置 UI 需要，延迟到首次访问才构建，
-     * 避免启动路径为构建它而实例化全部 Action。
-     */
+    /** key -> ActionClass。仅设置 UI 需要；延迟到首次访问才构建，避免启动路径实例化全部 Action。 */
     private val keyToActionMap: Map<String, Class<out ActionSpec>> by lazy {
         val map = hashMapOf<String, Class<out ActionSpec>>()
         FIRST_ACTION.forEach { actionClass ->
@@ -87,25 +83,13 @@ internal object ActionRegistry {
     }
 
     /**
-     * 取得功能的**单例**。
+     * 取得功能的**单例**：必须取静态 `INSTANCE` 字段。
      *
-     * Kotlin `object` 的唯一正确取法是静态 `INSTANCE` 字段 —— 这里曾经写成
-     * `cls.getObject("INSTANCE")`，而 `getObject` 是定义在 `Any` 上的扩展：
-     * 它在 `this.javaClass`（对 `Class<*>` 而言就是 `java.lang.Class`）上按
-     * `isStatic = false` 找字段，**既找错了类、又排除了 static**，于是必然抛
-     * `NoSuchFieldException`，然后静默退化成 `cls.new()` 反射构造。
-     *
-     * 反射构造出的是**第二个实例**：Kotlin `object` 的属性初始化器在 `<clinit>`
-     * 里（`putstatic INSTANCE` 之后的字节码），第二个实例不会执行它们，因此
-     * `Feature.declaredOptions` 永远为空 —— `settings` 为空 → 设置界面里功能的
-     * 文本框/多选/单选/滑块全部消失，而 hook 照常安装（`install()` 不读
-     * `declaredOptions`）、开关照常显示（`key` 是构造参数），所以看起来"功能正常，
-     * 只是少了额外选项"。
-     *
-     * 迁移前功能是普通 `class`，`cls.new()` 恰好是正确的，所以这个缺陷一直潜伏到
-     * 功能全面转为 `object` 才显形。`RuntimeSettingsRegistrationTest` 守着它。
-     *
-     * 见 `GroupHelper.kt` / `Initiator.kt` 里同款的 `INSTANCE` 取法。
+     * 静默退化成 `cls.new()` 反射构造会得到**第二个实例**，Kotlin `object` 的属性
+     * 初始化器在 `<clinit>` 里、不会为它执行，于是 `Feature.declaredOptions` 为空、
+     * `settings` 为空 —— 设置界面里该功能的文本框/单选/多选/滑块全部消失，而 hook
+     * 照常安装、开关照常显示，看起来只是"少了额外选项"。`RuntimeSettingsRegistrationTest`
+     * 守着这一点。
      */
     private fun instantiate(cls: Class<out ActionSpec>): ActionSpec {
         runCatching {

@@ -26,9 +26,7 @@ internal object StackUtil {
         "libcore."
     )
 
-    /**
-     * 从 Throwable 提取简化的堆栈信息，过滤系统帧。
-     */
+    /** 从 Throwable 提取简化的堆栈信息，过滤系统帧。 */
     @JvmStatic
     fun getSimpleStacktrace(
         throwable: Throwable?,
@@ -45,9 +43,7 @@ internal object StackUtil {
         return buildSimpleStacktrace(lines, startIndex, maxDepth)
     }
 
-    /**
-     * 从原始堆栈字符串提取简化堆栈信息。
-     */
+    /** 从原始堆栈字符串提取简化堆栈信息。 */
     @JvmStatic
     fun getSimpleStacktrace(
         rawStacktrace: String?,
@@ -62,9 +58,7 @@ internal object StackUtil {
         )
     }
 
-    /**
-     * 从线程的 StackTraceElement 数组提取堆栈信息（不过滤系统帧）。
-     */
+    /** 从线程的 StackTraceElement 数组提取堆栈信息（不过滤系统帧）。 */
     @JvmStatic
     fun getThreadStackTrace(
         stackFrames: Array<StackTraceElement>?,

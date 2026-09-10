@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * 反射成员缓存。
  *
- * 缓存键必须直接持有 [Class]，不能只使用类名。Xposed/插件环境中，不同
- * ClassLoader 可以加载同名类，仅以名称作为键会把两个完全不同的成员串在一起。
+ * 缓存键必须直接持有 [Class] 而非类名：Xposed/插件环境中不同 ClassLoader
+ * 可加载同名类，仅以名称作键会串起两个完全不同的成员。
  */
 internal object ReflectCache {
 

@@ -15,14 +15,13 @@ object FakePhone : Feature(
     desc = "伪装账号与安全设置页面中的手机号码。",
 ), DexKitTask {
 
-    /** 派生 key = `fake_phone.string.phone`（与历史一致）。 */
+    /** 派生 key = `fake_phone.string.phone`。 */
     private val phone by stringOption(
         settingKey = "string.phone",
         name = "phone",
         desc = "填写要伪装的手机号码，如 1145141919810",
     )
 
-    /** 原 `by lazy { …ifEmpty { "1145141919810" } }` 的等价实现。 */
     private val fakePhone: String
         get() = phone.ifEmpty { "1145141919810" }
 

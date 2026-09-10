@@ -13,7 +13,6 @@ object BlockChainAniSticker : Feature(
     key = "block_chain_ani_sticker",
     name = "屏蔽全屏动画彩蛋",
     desc = "屏蔽发送或接收超级表情时触发的全屏连锁动画播放。",
-    // 原 `onInit() = HookEnv.requireMinQQVersion(QQVersion.QQ_9_0_20)`
     requires = Requires(minQQVersion = QQVersion.QQ_9_0_20),
 ) {
 

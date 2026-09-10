@@ -13,19 +13,12 @@ import kotlin.reflect.KProperty
 /**
  * 一个功能配置项：**声明即唯一定义**。
  *
- * 持久化 key 由 [key] 从 `featureKey` 与 `settingKey` **派生**，因此
- * 声明处与读取处不可能写出两个不同的字符串 —— 这是缺陷 D1
- * （`add_module_entrance.boolean.ShowAttachedEntries` 悬空 key 导致 hook 永不安装）
- * 的根治手段。
+ * 持久化 key 由 [key] 从 `featureKey` 与 `settingKey` **派生**，声明处与读取处
+ * 不可能写出两个不同的字符串。
  *
- * ## 为什么不继承 `Setting`
- *
- * `com.owo233.tcqt.core.config.Setting` 是 `sealed class`，Kotlin 要求 sealed 类的
- * 直接子类在**同包同模块**。`api` 与 `core.config` 不同包，所以这里改用
- * **投影**：Option 自带元数据，通过 [toSetting] 产出既有 `Setting` 子类，
- * 使 `SettingsRegistry` / `FeatureCatalog` 无需任何改动。
- *
- * ## 用法
+ * `com.owo233.tcqt.core.config.Setting` 是 `sealed class`，其直接子类必须同包同模块，
+ * 因此这里改用**投影**：通过 [toSetting] 产出既有 `Setting` 子类，使
+ * `SettingsRegistry` / `FeatureCatalog` 无需任何改动。
  *
  * ```kotlin
  * object FakePicSize : Feature(key = "fake_pic_size", name = "篡改图片显示大小") {
@@ -39,12 +32,8 @@ import kotlin.reflect.KProperty
  * }
  * ```
  *
- * ## isHide
- *
- * 每个子类都带 [isHide]，投影出的 `Setting.isHide` 与旧契约**逐位对齐**：
- * `FeatureCatalog` 会据此跳过渲染（`FeatureCatalog.kt` 的三处 `filterNot { it.isHide }`）。
- * 迁移时若旧声明写了 `isHide = true`，新声明必须显式带上，否则该配置项会
- * 突然出现在设置界面里 —— 编译期与单元测试都发现不了。
+ * 每个子类都带 [isHide]：为 true 时 `FeatureCatalog` 会跳过渲染（但仍会注册与持久化）。
+ * 漏写时该配置项会出现在设置界面里，编译期与单元测试都发现不了。
  */
 sealed class Option<T : Any> : ReadWriteProperty<Any?, T> {
 
@@ -80,13 +69,8 @@ sealed class Option<T : Any> : ReadWriteProperty<Any?, T> {
     abstract fun set(value: T)
 
     /**
-     * 该配置项在存储中**是否已被显式写过**。
-     *
-     * 用于「用户从未配置过」与「用户配置成了默认值」这两种情况的区分，
-     * 典型场景是迁移期的旧 key 兜底：旧 key 有值而新 key 从未写过时，
-     * 需要读旧 key 并把它搬过来（见 `RepeatMessage.resolveRepeatOptions`）。
-     *
-     * 有了它，功能代码里就不再需要 `TCQTSetting.containsKey("手写字符串")`。
+     * 该配置项在存储中**是否已被显式写过** —— 区分「用户从未配置过」与
+     * 「用户配置成了默认值」。
      */
     fun isSet(): Boolean = TCQTSetting.containsKey(key)
 

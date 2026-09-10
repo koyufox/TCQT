@@ -100,7 +100,6 @@ object PlatformTools {
                 processInfo.pid != myPid &&
                 processInfo.processName != packageName) {
 
-                // kill
                 Process.killProcess(processInfo.pid)
             }
         }

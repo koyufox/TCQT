@@ -96,9 +96,8 @@ object AddModuleEntrance : Feature(
     // ── Lifecycle ──────────────────────────────────────────────────────
 
     /**
-     * 旧契约里它继承 `AlwaysRunAction` 并覆写 `canRun`，**不看用户开关**：
-     * 只要当前 Hook 框架支持就直接运行。开关只用来控制「附加工具入口」
-     * 是否显示（见 [hookSettingEntries] 里的 `TCQTSetting.getBoolean(key)`）。
+     * **不看用户开关**：只要当前 Hook 框架支持就直接运行。
+     * 开关只用来控制「附加工具入口」是否显示（见 [hookSettingEntries]）。
      */
     override fun canRun(): Boolean {
         return HookEngineManager.engine.frameworkName != HookFramework.ZYGISK ||
@@ -360,8 +359,6 @@ object AddModuleEntrance : Feature(
 
     // ── Reflection Helpers ─────────────────────────────────────────────
 
-    // 原 `private companion object` 的成员：`class` 改 `object` 后 companion 不再必要，
-    // 这些扩展函数作为 object 的私有成员同样在本类体内可用。
     private fun Class<*>.inferProviderClass(): Class<*>? =
         getFields(false)
             .firstOrNull { it.isNotStatic && it.type != Boolean::class.javaPrimitiveType }

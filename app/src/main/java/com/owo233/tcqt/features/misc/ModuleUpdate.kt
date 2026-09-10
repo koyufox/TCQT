@@ -18,13 +18,10 @@ object ModuleUpdate : Feature(
     key = "module_update",
     name = "模块更新干掉宿主",
     desc = "每次本模块更新后将自动重启（杀死）宿主进程。",
-    // 原 `defaultEnabled` 是运行期表达式，不是字面量：
-    // `frameworkName != ZYGISK && apiLevel < 102`。
     defaultEnabledProvider = {
         HookEngineManager.engine.frameworkName != HookFramework.ZYGISK &&
                 HookEngineManager.engine.apiLevel < 102
     },
-    // 原 `onInit() = HookEngineManager.engine.frameworkName != HookFramework.ZYGISK`
     requires = Requires(nonZygiskOnly = true),
 ) {
 

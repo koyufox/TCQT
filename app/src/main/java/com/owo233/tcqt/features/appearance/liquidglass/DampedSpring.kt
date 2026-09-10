@@ -7,9 +7,8 @@ import kotlin.math.sqrt
  * 单自由度临界参数化弹簧，参数语义与 Compose 的
  * `spring(dampingRatio, stiffness, visibilityThreshold)` 一致。
  *
- * 采用半隐式欧拉法积分：先按当前加速度更新速度，再用新速度更新位置，
- * 在高达 1000 的刚度下仍保持数值稳定。为防止掉帧导致积分器发散，
- * 单次更新被切分为不超过 1/240 秒的子步，且总步长被钳制在 64ms 以内。
+ * 半隐式欧拉积分：先按当前加速度更新速度，再用新速度更新位置。单次更新切分为
+ * 不超过 1/240 秒的子步，总步长钳制在 64ms 以内，防止掉帧时积分发散。
  *
  * @property dampingRatio 阻尼比，1.0 为临界阻尼（无过冲）
  * @property stiffness 刚度，越大回复越快
@@ -46,9 +45,8 @@ internal class DampedSpring(
     }
 
     /**
-     * 推进 [dtSeconds] 秒。
-     *
-     * @return 仍在运动中返回 true；位置与速度均已收敛到阈值内则吸附到目标并返回 false
+     * 推进 [dtSeconds] 秒；仍在运动返回 true，位置与速度均已收敛到阈值内
+     * 则吸附到目标并返回 false。
      */
     fun update(dtSeconds: Float): Boolean {
         if (!isRunning) return false

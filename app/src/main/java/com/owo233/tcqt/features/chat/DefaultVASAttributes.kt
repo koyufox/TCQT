@@ -19,12 +19,9 @@ object DefaultVASAttributes : Feature(
     key = "default_vas_attrs",
     name = "净化聊天界面装扮",
     desc = "默认禁用他人消息的个性化气泡、字体、QQ秀头像与头像挂件，若需保留特定项目（如头像挂件），请在下方勾选排除。",
-    // 原 `onInit() = HookEnv.isNT() && HookEnv.isQQ()` 改为声明式。
-    // Feature.onInit 是 final，作者无法再往可用性判断里塞副作用（基线缺陷 D7）。
     requires = Requires(ntOnly = true, host = Requires.Host.QQOnly),
 ) {
 
-    /** 属性名沿用原来的局部变量名 `options`；派生 key = `default_vas_attrs.type`。 */
     private val options by multiIntOption(
         settingKey = "type",
         name = "可选保留",

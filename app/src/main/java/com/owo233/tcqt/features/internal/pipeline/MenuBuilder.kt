@@ -16,7 +16,6 @@ import com.owo233.tcqt.core.log.Log
 object MenuBuilder : InfraTask(
     key = "MenuBuilder",
     priority = ActionPriority.BACKGROUND,
-    // 原 `onInit() = HookEnv.isNT()`
     requires = Requires(ntOnly = true),
 ) {
 
@@ -46,7 +45,7 @@ object MenuBuilder : InfraTask(
 
         decoratorMap.keys.forEach { target ->
             val targetClass =
-                load(target) ?: // Log.e("MenuBuilder skip missing component: $target")
+                load(target) ?:
                 return@forEach
 
             val listMethod = targetClass.declaredMethods

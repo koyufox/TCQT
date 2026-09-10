@@ -145,7 +145,5 @@ data class FeatureSliderUiState(
 // ───── Category Navigation Models ─────
 
 /**
- * Represents a category card shown on the current navigation level.
- * A leaf category (depth == maxDepth or children empty) maps to features;
- * an intermediate category maps to sub-categories.
+ * Category card at the current navigation level: leaf → features, intermediate → sub-categories.
  */

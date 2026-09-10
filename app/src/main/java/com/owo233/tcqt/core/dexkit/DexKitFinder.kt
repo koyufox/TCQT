@@ -48,7 +48,6 @@ internal object DexKitFinder {
         if (!DexKitCache.isHostVersionMatched) {
             return allKeys
         }
-        //  || DexKitCache.cacheMap[it]?.isEmpty() == true
         return allKeys.filter { it !in DexKitCache.cacheMap }.toSet()
     }
 
@@ -124,14 +123,10 @@ interface DexKitTask {
 
     fun getQueryMap(): Map<String, BaseMatcher> = emptyMap()
 
-    /**
-     * 通常 getCacheKeys 和 execute 会同时重写
-     */
+    /** 通常与 execute 一起重写。 */
     fun getCacheKeys(): Set<String> = getQueryMap().keys
 
-    /**
-     * 重写 execute 方法的同时 必须同时重写 getCacheKeys 方法
-     */
+    /** 重写 execute 时必须同时重写 getCacheKeys。 */
     fun execute(bridge: DexKitBridge, cache: MutableMap<String, String>) {
         getQueryMap().forEach { (name, query) ->
             when (query) {

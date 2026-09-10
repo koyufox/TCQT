@@ -1,7 +1,5 @@
 /**
- * 此 HOOK 来自 QAuxiliary
- * 选项部分直接复刻 QAuxiliary 选项
- * 由 owo233(callng) 完全手写一遍 表示尊重
+ * 此 HOOK 与选项均来自 QAuxiliary。
  */
 
 package com.owo233.tcqt.features.chat
@@ -19,12 +17,9 @@ object ImageCustomSummary : Feature(
     key = "image_custom_summary",
     name = "自定义图片外显文字",
     desc = "自定义消息列表中图片类型消息的外显文字。",
-    // 原 `onInit() = HookEnv.isNT()` 改为声明式。
     requires = Requires(ntOnly = true),
 ) {
 
-    // 属性名沿用原来的局部变量名，读写点无需修改。
-    // 派生 key：image_custom_summary.type / image_custom_summary.string
     private val mHookType by multiIntOption(
         settingKey = "type",
         name = "外显类型",

@@ -46,8 +46,7 @@ object NTServiceFetcher {
             !AntiRecallConfig.hasEnabledReminder()
         ) return
 
-        // 新版与旧版的区别: 核心差异在于 Protobuf 解析方式不同。
-        // 旧版使用 Google Protobuf，而新版使用 kotlinx-serialization。
+        // 新旧解析器的区别：旧版用 Google Protobuf，新版用 kotlinx-serialization
         val handler: MessageHandler = if (AntiRecallConfig.useNewParser()) {
             NewPreventRetractingMessageCore
         } else {

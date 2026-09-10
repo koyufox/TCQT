@@ -18,14 +18,12 @@ object HideGrayTipText : Feature(
     desc = "隐藏聊天界面上的灰色提示文本。",
 ) {
 
-    /** 派生 key = `hide_gray_tip_text.string.saveConfig`。 */
     private val saveConfig by stringOption(
         settingKey = "string.saveConfig",
         name = "保存的配置",
         placeholder = "即将彻底消失\n加入了群聊\n我也要打卡\n一起来玩吧\n... 一行一个关键字",
     )
 
-    /** 沿用原来的 lazy 语义：首次渲染灰色提示时读取一次并缓存。 */
     private val configList by lazy { saveConfig.lines() }
 
     override fun install() {

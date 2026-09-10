@@ -18,8 +18,7 @@ import com.owo233.tcqt.core.hook.hookMethodAfter
 import com.owo233.tcqt.host.QQInterfaces
 
 /**
- * GUID 在登录 / 设备注册流程早期被读取（不会在 onCreate 内），
- * 放在 EARLY：onCreate 返回后立刻安装。
+ * GUID 在登录 / 设备注册流程早期被读取（不会在 onCreate 内），故放在 EARLY。
  */
 @RegisterAction
 object ChangeGuid : Feature(
@@ -31,11 +30,7 @@ object ChangeGuid : Feature(
     priority = ActionPriority.EARLY,
 ) {
 
-    // 属性名沿用原来 `GuidConfig` 的属性名，读写点无需修改。
-    // 派生 key：change_guid.string.defaultGuid / .string.newGuid / .boolean.isEnabled
-    //
-    // isHide = true 必须保留：这两个输入框此前就不在设置界面渲染，
-    // 漏掉会让它们突然出现在「高级」分类里。
+    // isHide = true 必须保留，否则这两个输入框会出现在「高级」分类里。
     private var defaultGuid by stringOption(
         settingKey = "string.defaultGuid",
         name = "默认GUID",

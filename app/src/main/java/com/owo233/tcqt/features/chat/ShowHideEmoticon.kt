@@ -25,9 +25,7 @@ object ShowHideEmoticon : Feature(
 ), DexKitTask {
 
 
-    /**
-     * 只在打开表情面板时才会被调用，放到 BACKGROUND 错峰安装。
-     */
+    /** 只在打开表情面板时才会被调用，放到 BACKGROUND 错峰安装。 */
 
     override fun install() {
         forceGrayEmoticonsIntoPanels()

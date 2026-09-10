@@ -18,10 +18,6 @@ object ForcedABTest : Feature(
     processes = setOf(ActionProcess.ALL),
 ) {
 
-    /**
-     * 属性名沿用原来的局部变量名 `mode`，因此下面所有 `when (mode)` 无需改动。
-     * 派生 key = `"forced_to_ab" + "." + "mode"` = `forced_to_ab.mode`（与历史一致）。
-     */
     private val mode by intOption(
         settingKey = "mode",
         name = "强制模式",

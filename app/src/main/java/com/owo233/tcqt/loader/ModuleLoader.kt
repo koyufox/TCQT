@@ -112,7 +112,6 @@ internal object ModuleLoader {
                 hookQFixAttach(method)
                 return true
             } catch (_: ClassNotFoundException) {
-                // ?
             } catch (th: Throwable) {
                 Log.e("nextInit Failure: $className", th)
             }
@@ -231,8 +230,7 @@ internal object ModuleLoader {
 
                     installPipelineDecorators()
 
-                    // 只同步安装 CRITICAL，其余全部交给 StartupScheduler 在
-                    // onCreate 返回后分批后台安装，避免宿主白屏时间随功能数量线性增长
+                    // 只同步安装 CRITICAL，其余由 StartupScheduler 在 onCreate 返回后分批后台安装
                     val proc = HookSteps.resolveActionProcess()
                     val plan = HookSteps.initStartup(app, proc, missingKeys)
                     StartupScheduler.schedule(app, proc, plan, needDexKitFind)
@@ -258,11 +256,11 @@ internal object ModuleLoader {
     }
 
     /**
-     * 把上层能力注入 `core`（Spec §3.1：core 不得依赖 host/ui/loader）。
+     * 把上层能力注入 `core`。
      *
-     * **必须在 [HookSteps.initContext] 之前调用** —— `initContext` 会触发
-     * `HostBridge.notifyHostApplicationReady`，若此时没有订阅者，
-     * `ParasiticActivity` 就不会被初始化，寄生 Activity 会直接失效。
+     * 必须在 [HookSteps.initContext] 之前调用：`initContext` 会触发
+     * `HostBridge.notifyHostApplicationReady`，若此时还没有订阅者，
+     * `ParasiticActivity` 就不会被初始化，寄生 Activity 直接失效。
      */
     private fun installHostBridge() {
         HostBridge.topActivityProvider = { QQInterfaces.topActivity }
@@ -307,16 +305,12 @@ internal object ModuleLoader {
     }
 
     /**
-     * 登记**非注册**的管线装饰器。
+     * 登记非注册的管线装饰器。
      *
      * 注册 Action 的装饰器由 `PipelineDecorators` 从 `ActionRegistry` 自动发现；
      * 但像 `RecallHeaderTip` 这种"某功能的渲染器、自己没有功能开关"的普通类没有
-     * 注册项，必须显式登记一次。
-     *
-     * 之所以放在 `loader`：spec §3.6 禁止 `features/internal/pipeline/` import 兄弟
-     * `features.*` 包，而 `loader` 是唯一同时允许依赖 `features` 与 `core` 的层。
-     * 两条启动路径都在 `HookSteps.initStartup` 之前调用本方法，因此时机确定，
-     * 早于任何管线的 `install()`。
+     * 注册项，必须显式登记一次。两条启动路径都在 `HookSteps.initStartup` 之前
+     * 调用本方法，因此时机确定，早于任何管线的 `install()`。
      */
     private fun installPipelineDecorators() {
         PipelineDecorators.register(RecallHeaderTip())

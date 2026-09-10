@@ -22,17 +22,11 @@ object AddPlusMenu : Feature(
     name = "添加额外选项",
     desc = "给主页右上角菜单添加额外功能选项(结束/重启进程)。",
     /**
-     * 主页加号菜单在首页初始化时就会构建，必须在构建前把菜单项注册好，
-     * 否则首次启动会漏。EARLY：onCreate 返回后立刻执行。
+     * 主页加号菜单在首页初始化时就会构建，必须在构建前注册好菜单项，否则首次启动会漏。
      */
     priority = ActionPriority.EARLY,
 ), DexKitTask {
 
-    /**
-     * 原来菜单 hook 由 `host/service/PlusMenuManager`（一个隐藏 Action）安装，
-     * spec §4.2 要求它退出注册、只当宿主服务。hook 搬到这里：条目注册与 hook
-     * 安装同源，且 `host` 层不再需要依赖 `api` 门面。
-     */
     override fun install() {
         PlusMenuManager.registerAll(
             ExtraMenuItem(

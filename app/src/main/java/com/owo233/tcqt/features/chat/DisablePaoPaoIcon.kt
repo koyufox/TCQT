@@ -16,7 +16,6 @@ object DisablePaoPaoIcon : Feature(
     key = "disable_pao_pao_icon",
     name = "禁用泡泡图标",
     desc = "将聊天界面中的泡泡图标替换为红包图标。",
-    // 原 `onInit() = HookEnv.isQQ()`
     requires = Requires(host = Requires.Host.QQOnly),
 ) {
 
@@ -26,11 +25,6 @@ object DisablePaoPaoIcon : Feature(
             clazz.findMethod {
                 paramTypes(int, string, null)
             }.hookAfter { param ->
-                /*
-                val layout = param.thisObject as LinearLayout
-                val tags = (0 until layout.childCount).map { idx -> layout.getChildAt(idx).tag }
-                Log.e("PanelIconLinearLayout child tags = $tags")
-                */
                 val layout = param.thisObject as LinearLayout
                 val icon = layout.findViewWithTag<ImageView>(1016)
 

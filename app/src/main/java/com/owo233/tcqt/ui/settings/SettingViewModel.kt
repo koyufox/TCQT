@@ -72,7 +72,7 @@ class SettingViewModel : ViewModel() {
     /** Stack of full paths. Empty = root. */
     private val _navStack = mutableStateListOf<String>()
 
-    /** Current path, e.g. "" for root, "高级" for first level, "高级/过检测" for second. */
+    /** Current full path; empty at root, e.g. "高级/过检测" at the second level. */
     val currentPath: String
         get() = _navStack.lastOrNull().orEmpty()
 
@@ -123,7 +123,7 @@ class SettingViewModel : ViewModel() {
         buildCurrentCategories()
     }
 
-    /** Features shown at the current level (only when it's a leaf / has direct features). */
+    /** Features shown at the current level (only when it is a leaf / has direct features). */
     val currentFeatures: State<List<FeatureItemUiState>> = derivedStateOf {
         computeVisibleFeatureUiStates()
     }
@@ -140,7 +140,7 @@ class SettingViewModel : ViewModel() {
         buildBreadcrumbs()
     }
 
-    /** Label for the current category level (used as page title). */
+    /** Page title for the current category level. */
     val currentCategoryLabel: State<String> = derivedStateOf {
         if (isAtRoot) "功能配置"
         else {
@@ -413,7 +413,7 @@ class SettingViewModel : ViewModel() {
     }
 
     fun recalculateStats() {
-        // No-op: statistics are automatically computed using derivedStateOf
+        // No-op: stats are derived state
     }
 
     // ───── Internal: category building ─────
@@ -434,9 +434,9 @@ class SettingViewModel : ViewModel() {
     }
 
     /**
-     * A leaf node with exactly one feature whose label matches the node's own
-     * label is redundant — the category page would just show a single feature
-     * with the same name.  Collapse it so the feature appears at the parent level.
+     * A leaf node with exactly one feature carrying the node's own label is redundant:
+     * its category page would show a single feature named like the category, so the
+     * feature is hoisted to the parent level instead.
      */
     private fun isCollapsibleNode(node: CategoryNode): Boolean {
         if (node.children.isNotEmpty()) return false
@@ -537,8 +537,8 @@ class SettingViewModel : ViewModel() {
             return ranked.map { feature -> toFeatureItemUiState(feature) }
         }
 
-        // Normal mode: features whose categoryPath exactly matches current path,
-        // plus collapsed features from child nodes that are redundant.
+        // Normal mode: features whose categoryPath matches the current path,
+        // plus features collapsed in from redundant child nodes.
         val collapsedKeys = getCollapsedFeatureKeys()
         val matchPath = currentPath
         val explicitFeatures = if (matchPath.isEmpty()) {

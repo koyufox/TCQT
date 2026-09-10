@@ -159,8 +159,8 @@ fun Class<*>.newInstanceWithArgs(vararg args: Any?): Any {
 }
 
 /**
- * 类型兼容判断，包含引用赋值兼容及基本类型与包装类型的等价关系。
- * [actualType] 为 null 时保留旧 DSL 语义，表示任意类型。
+ * 类型兼容判断：引用赋值兼容，以及基本类型与包装类型的等价关系。
+ * [actualType] 为 null 表示任意类型。
  */
 fun Class<*>.isCompatibleWith(actualType: Class<*>?): Boolean {
     return actualType == null || ReflectTypeMatcher.isTypeCompatible(this, actualType)

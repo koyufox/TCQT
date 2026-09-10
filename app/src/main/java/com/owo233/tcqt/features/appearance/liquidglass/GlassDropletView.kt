@@ -34,13 +34,12 @@ import kotlin.math.roundToInt
 /**
  * 跟随选中项的「玻璃液滴」。
  *
- * 静止时是一层轻着色的胶囊；按住/拖拽时随按压进度淡入透镜（折射带与
- * 位移量均乘以进度）。液滴折射的背景是「页面 + 单独以约 1.1 倍绘制的
- * Tab 行副本」的合成——放大且染成选中色的正是这份副本经折射后的样子，
- * 因此液滴必须叠在真实 Tab 之上，而真实 Tab 保持原尺寸，避免二次放大。
+ * 静止时是一层轻着色的胶囊；按住/拖拽时随按压进度淡入透镜（折射带与位移量均乘以进度）。
+ * 液滴折射的背景是「页面 + 单独以约 1.1 倍绘制的 Tab 行副本」的合成——放大且染成选中色
+ * 的正是这份副本经折射后的样子，因此液滴必须叠在真实 Tab 之上，真实 Tab 保持原尺寸。
  *
- * 未选中 Tab 的副本先整体绘制、再以 SRC_ATOP 覆盖选中色，随后把自带
- * 颜色的子视图（未读角标、红点）按其自身边界重绘一遍以恢复本色。
+ * 未选中 Tab 的副本先整体绘制、再以 SRC_ATOP 覆盖选中色，随后把自带颜色的子视图
+ * （未读角标、红点）按其自身边界重绘一遍以恢复本色。
  */
 internal class GlassDropletView(
     context: Context,
@@ -126,8 +125,7 @@ internal class GlassDropletView(
     }
 
     /**
-     * 主题切换：与药丸共用同一份表面材质参数，
-     * 保证拖拽淡入时液滴与药丸颜色无缝衔接。
+     * 主题切换：与药丸共用同一份表面材质参数，保证拖拽淡入时两者颜色无缝衔接。
      */
     fun setTheme(night: Boolean) {
         dark = night
@@ -164,8 +162,8 @@ internal class GlassDropletView(
     }
 
     /**
-     * 强制重采样背景：液滴以 translationX 滑动时不会经过重绘，
-     * 若不主动刷新，折射内容会停留在按压开始瞬间的画面。
+     * 强制重采样背景：液滴以 translationX 滑动时不经过重绘，
+     * 不主动刷新则折射内容会停在按压开始瞬间的画面。
      */
     fun refresh() {
         if (progress > 0.01f) invalidate()
@@ -238,10 +236,7 @@ internal class GlassDropletView(
         }
     }
 
-    /**
-     * 在静置胶囊之上重绘选中的 Tab，使液滴只改变背景而不吞掉
-     * 宿主自身的选中图标与文字颜色。
-     */
+    /** 在静置胶囊之上重绘选中的 Tab；液滴只改变背景，不吞掉宿主的选中图标与文字颜色。 */
     private fun drawRestingTab(canvas: Canvas) {
         val tabRow = tabRowRef.get() ?: return
         val index = QQTabLocator.selectedIndex(tabRow)
@@ -300,9 +295,7 @@ internal class GlassDropletView(
         backdropNode.setRenderEffect(backdropEffect)
     }
 
-    /**
-     * 组装透镜输入：已模糊的页面、玻璃表面材质与放大的染色 Tab 副本。
-     */
+    /** 组装透镜输入：已模糊的页面、玻璃表面材质与放大的染色 Tab 副本。 */
     private fun paintBackdrop(canvas: Canvas, nodeWidth: Int, nodeHeight: Int, p: Float, viewScale: Float) {
         val tabRow = tabRowRef.get()
 
@@ -383,10 +376,9 @@ internal class GlassDropletView(
     /**
      * 绘制一份按选中色染色的 Tab 副本。
      *
-     * 染色必须是覆盖整个 Tab 自身 `draw()` 的单层叠色：逐叶子染色会
-     * 静默丢掉容器自绘的内容（未读气泡正由容器绘制）。自带颜色的
-     * 子视图随后按其边界重绘恢复本色——「是否为角标」以
-     * `willNotDraw` 判定，宿主的角标在 onDraw 里自绘且无背景。
+     * 染色必须是覆盖整个 Tab 自身 `draw()` 的单层叠色：逐叶子染色会静默丢掉容器自绘的
+     * 内容（未读气泡正由容器绘制）。自带颜色的子视图随后按其边界重绘恢复本色——
+     * 「是否为角标」以 `willNotDraw` 判定，宿主的角标在 onDraw 里自绘且无背景。
      */
     private fun drawTintedTab(canvas: Canvas, tab: View, accent: Int) {
         if (tab.visibility != VISIBLE || tab.width <= 0 || tab.height <= 0) return
@@ -429,9 +421,8 @@ internal class GlassDropletView(
     }
 
     /**
-     * 当前选中的强调色，从处于选中态的标签文字实时读取，
-     * 跟随宿主主题而非写死；近白/近黑的无效值被拒绝，
-     * 避免选中尚未落定时缓存到未选中颜色。
+     * 当前选中的强调色，从处于选中态的标签文字实时读取以跟随宿主主题；
+     * 近白/近黑的无效值被拒绝，避免选中尚未落定时缓存到未选中颜色。
      */
     private fun accentColour(tabRow: ViewGroup): Int {
         for (tab in tabRow.children) {
@@ -473,9 +464,8 @@ internal class GlassDropletView(
     /**
      * 收集 Tab 内自带颜色（角标、红点）的边界。
      *
-     * 宿主的纯图标布局以 translationY 居中角标而非重新布局，
-     * 必须按实际绘制位置（left/top + translation）累计，否则
-     * 未染色重绘的裁剪区会漏掉下半部分。
+     * 宿主的纯图标布局以 translationY 居中角标而非重新布局，必须按实际绘制位置
+     * （left/top + translation）累计，否则未染色重绘的裁剪区会漏掉下半部分。
      */
     private fun collectBadgeBounds(parent: ViewGroup, offsetX: Float, offsetY: Float, depth: Int) {
         if (depth > 4) return
@@ -508,8 +498,8 @@ internal class GlassDropletView(
     /**
      * Tab 内容栈的半高（以 Tab 中心为基准）。
      *
-     * 宿主的 Material TabView 首子项是整列布局框架而非紧凑的
-     * 图标+文字栈，无法据此推导，返回负值交由调用方走比例兜底。
+     * 宿主的 Material TabView 首子项是整列布局框架而非紧凑的图标+文字栈，
+     * 无法据此推导，返回负值交由调用方走比例兜底。
      */
     private fun contentHalfHeight(tabRow: ViewGroup?): Float {
         if (tabRow == null || tabRow.isEmpty()) return 0f
@@ -532,7 +522,7 @@ internal class GlassDropletView(
         val nodeHeight = h + pad * 2
         node.setPosition(0, 0, nodeWidth, nodeHeight)
 
-        // getLocationOnScreen 返回的是缩放后的位置（液滴被按住时放大至 78/56），
+        // getLocationOnScreen 返回缩放后的位置（按住时液滴放大至 78/56），
         // 而画布处于未缩放本地坐标系，须取无变换坐标。
         ViewGeometry.unscaledScreenPos(this, selfLoc)
         val viewScale = ViewGeometry.cumulativeScale(this)

@@ -43,9 +43,8 @@ internal data class FloatingBarGeometry(
             val scaledTabWidth = (baseTabWidth * safeScale).roundToInt().coerceAtLeast(1)
             val scaledPadding = (4f * safeScale).roundToInt().coerceAtLeast(1)
             return FloatingBarGeometry(
-                // Derive the total from slots instead of scaling it
-                // independently. Independent rounding leaves a one-pixel
-                // remainder on one side at common scale values.
+                // Derive the total from slots instead of scaling it independently:
+                // independent rounding leaves a one-pixel remainder on one side.
                 totalWidth = scaledTabWidth * safeTabCount + scaledPadding * 2,
                 barHeight = (baseBarHeight * safeScale).roundToInt(),
                 tabWidth = scaledTabWidth,
@@ -221,8 +220,7 @@ private class PreviewTabIconView(context: Context, private val kind: IconKind) :
 
 /**
  * Host for NewView. Persistent scaling changes this view's measured geometry;
- * the transient press animation from [DropletGestureDriver] may still scale it
- * briefly while a gesture is active.
+ * the transient press animation from [DropletGestureDriver] may scale it briefly.
  */
 internal class FloatingBarHostLayout(
     context: Context,
@@ -399,8 +397,7 @@ internal class FloatingBottomBarPreviewView(context: Context) : FrameLayout(cont
         backdrop.addView(pagePreview, LayoutParams(-1, -1))
         addView(backdrop)
         addView(barHost)
-        // Match the runtime z-order: native Tab content is beneath the
-        // selected indicator so Liquid Glass can redraw the active item.
+        // Match the runtime z-order: native Tab content is beneath the selected indicator.
         labels.forEachIndexed { index, label ->
             row.addView(FloatingBarPreviewItem(context, iconKinds[index], label))
         }
@@ -637,7 +634,6 @@ internal class FloatingBottomBarPreviewView(context: Context) : FrameLayout(cont
         invalidate()
     }
 
-    /** Resolve both taps and drags from the laid-out bar-local geometry. */
 }
 
 /** A restrained QQ-like page backdrop used by the real glass capture pipeline. */

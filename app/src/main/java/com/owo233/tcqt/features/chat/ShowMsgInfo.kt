@@ -41,7 +41,6 @@ object ShowMsgInfo : Feature(
     /** 装配顺序：AIO 视图装饰器里最先装配。 */
     override val decoratorOrder: Int = 100
 
-    /** 派生 key = `show_msg_info.format`。 */
     private val format by stringOption(
         settingKey = "format",
         name = "显示格式",
@@ -67,7 +66,7 @@ object ShowMsgInfo : Feature(
         return result
     }
 
-    // 功能本体由 AIOViewUpdate 管线驱动，模块启动时没有额外要安装的东西。
+    // 功能本体由 AIOViewUpdate 管线驱动，启动时无需安装。
     override fun install() = Unit
 
     override fun onGetViewNt(

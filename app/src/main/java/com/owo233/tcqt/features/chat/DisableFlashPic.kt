@@ -20,7 +20,6 @@ object DisableFlashPic : Feature(
     key = "disable_flash_pic",
     name = "将闪照视为正常图片",
     desc = "好友发送的闪照将作为正常图片显示并添加灰条提示。",
-    // 原 `onInit() = HookEnv.isNT()`
     requires = Requires(ntOnly = true),
 ) {
 

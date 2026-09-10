@@ -10,8 +10,8 @@ import com.owo233.tcqt.core.sync.SyncUtils
 
 /**
  * 启动调度器：把非 [com.owo233.tcqt.core.action.ActionPriority.CRITICAL] 的功能安装从
- * `BaseApplicationImpl.onCreate` 的同步路径移出，从而让宿主启动白屏时间
- * 不再随启用功能数量线性增长。
+ * `BaseApplicationImpl.onCreate` 的同步路径移出，避免宿主启动白屏时间随启用功能数量
+ * 线性增长。
  *
  * 时序：
  * ```
@@ -20,7 +20,7 @@ import com.owo233.tcqt.core.sync.SyncUtils
  *        ├─ EARLY      onCreate 返回后立刻，后台线程
  *        ├─ DEFERRED   MAIN 等首帧后 / 后台进程立刻，后台分批
  *        ├─ BACKGROUND 最后一批，后台分批
- *        └─ DexKit     缓存缺失时触发查找（仍走 MainFragment.onResume 旧流程）
+ *        └─ DexKit     缓存缺失时触发查找
  * ```
  */
 internal object StartupScheduler {
@@ -66,8 +66,7 @@ internal object StartupScheduler {
             }
         }
 
-        // DexKit 缓存缺失：触发后台查找（自身已在 MainFragment.onResume 之后异步执行），
-        // 不再阻塞 onCreate。
+        // DexKit 缓存缺失：触发后台查找，不阻塞 onCreate。
         if (needDexKitFind) {
             ModuleScope.launchIO("TCQT-DexKit") {
                 DexKitFinder.doFind()

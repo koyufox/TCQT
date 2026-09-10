@@ -86,10 +86,10 @@ abstract class CompatibleComposeDialog(
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             setGravity(Gravity.CENTER)
             
-            // Clear default window dimming to draw and fade the dim background ourselves in Compose
+            // Compose draws and fades the dim background itself
             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             
-            // Remove default window animations to prevent conflicts with Compose transitions
+            // 0 = no window animation, would fight the Compose transitions
             setWindowAnimations(0)
             
             setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)

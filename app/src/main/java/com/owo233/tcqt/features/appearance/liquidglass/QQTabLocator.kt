@@ -18,9 +18,9 @@ import kotlin.math.abs
 /**
  * QQ 原生底部导航栏的定位与解析。
  *
- * 宿主的资源 ID 经过混淆，无法按名称查找，唯一稳定的锚点是 UI 类名。
- * QQ 同一安装包内并存新旧两套底栏（`QQTabWidget` 与灰度中的 `QQTabLayout`），
- * 由服务端开关决定实际生效者，因此定位逻辑需同时兼容两者、按实际存在者运行。
+ * 宿主的资源 ID 经过混淆，无法按名称查找，唯一稳定的锚点是 UI 类名。同一安装包内
+ * 并存新旧两套底栏（`QQTabWidget` 与灰度中的 `QQTabLayout`），由服务端开关决定
+ * 实际生效者，定位逻辑需同时兼容两者。
  */
 internal object QQTabLocator {
 
@@ -61,8 +61,8 @@ internal object QQTabLocator {
 
     /**
      * 底栏切换授权只在短窗口内有效，并绑定到发起切换时的 pager 和目标页。
-     * QQ 某些版本会把 setCurrentItem 投递到下一帧，不能用 ThreadLocal 限制
-     * 授权的生命周期；短窗口和一次性消费可避免误伤初始化、恢复等内部调用。
+     * QQ 某些版本会把 setCurrentItem 投递到下一帧，不能用 ThreadLocal 限制授权
+     * 的生命周期；短窗口加一次性消费可避免误伤初始化、恢复等内部调用。
      */
     private data class SmoothArm(
         val pager: ViewGroup,
@@ -110,8 +110,8 @@ internal object QQTabLocator {
     /**
      * 在视图树中定位底栏：优先按类名精确匹配，失败后按结构特征兜底。
      *
-     * 结构兜底刻意从严——找不到底栏仅损失功能；错误命中则会把无关控件
-     * 重新父级化为浮动药丸，直接破坏宿主界面。
+     * 结构兜底刻意从严——找不到底栏仅损失功能；错误命中会把无关控件重新父级化
+     * 为浮动药丸，直接破坏宿主界面。
      */
     fun locateTabView(root: View?): ViewGroup? =
         findTabView(root) ?: findTabRowByShape(root)?.let { shapeMatched ->
@@ -136,8 +136,8 @@ internal object QQTabLocator {
     /**
      * 判断一个视图是否被布局成底部 Tab 行的模样。
      *
-     * 全部几何条件必须同时满足，最终由两条行为特征裁决：子项以自身
-     * 索引作为 tag，或恰有一项处于选中态——普通按钮行两者皆无。
+     * 全部几何条件必须同时满足，最终由两条行为特征裁决：子项以自身索引作为 tag，
+     * 或恰有一项处于选中态——普通按钮行两者皆无。
      */
     private fun looksLikeTabRow(view: View): Boolean {
         if (view !is ViewGroup || view.visibility != View.VISIBLE ||
@@ -206,7 +206,6 @@ internal object QQTabLocator {
 
     /**
      * 包裹 Tab 行的最小容器，即将被重新父级化的对象。
-     *
      * 一旦某个祖先明显高于 Tab 行本身，它便是页面而非底栏，随即停止上溯。
      */
     private fun tightestWrapper(row: ViewGroup): ViewGroup {
@@ -221,10 +220,8 @@ internal object QQTabLocator {
     }
 
     /**
-     * 解析承载各个 Tab 的横向行容器。
-     *
-     * Material 风格底栏把 Tab 放在横向 `LinearLayout` 子容器中；
-     * `TabWidget` 系底栏则自身即为行容器，直接持有各 Tab。
+     * 解析承载各个 Tab 的横向行容器：Material 风格底栏把 Tab 放在横向
+     * `LinearLayout` 子容器中；`TabWidget` 系底栏自身即为行容器。
      */
     fun findTabRow(tabView: ViewGroup?): ViewGroup? {
         if (tabView == null) return null
@@ -264,9 +261,7 @@ internal object QQTabLocator {
 
     /**
      * 将宿主侧的原始子位置索引转换为行内可见布局槽位。
-     *
-     * QQ 未给 Tab 标记逻辑索引，直接使用原始子位置；GONE 的功能占位项
-     * 在任何情况下都需要被跳过。
+     * QQ 未给 Tab 标记逻辑索引，直接使用原始子位置；GONE 的功能占位项必须跳过。
      */
     fun slotForIndex(tabRow: ViewGroup?, index: Int): Int {
         if (tabRow == null || index < 0) return -1
@@ -283,9 +278,7 @@ internal object QQTabLocator {
 
     /**
      * 从视图状态直接读取当前选中的 Tab 槽位。
-     *
-     * Tab 根视图在每次切换时都会被设置 `selected` 状态，可靠且零成本，
-     * 是逐帧观察选中变化的首选信号。
+     * Tab 根视图在每次切换时都会被设置 `selected`，是逐帧观察选中变化的首选信号。
      */
     fun selectedIndex(tabRow: ViewGroup?): Int {
         if (tabRow == null) return -1
@@ -327,9 +320,7 @@ internal object QQTabLocator {
 
     /**
      * 底栏当前选中槽位：优先读子项选中态，其次反射调用 `getCurrentTab()`。
-     *
-     * 仅 Material 风格底栏实现了该 getter；`TabWidget` 系底栏没有，
-     * 于是落入子项选中态这一信号，两者的数据源本就一致。
+     * 仅 Material 风格底栏实现了该 getter，`TabWidget` 系底栏没有；两者的数据源本就一致。
      */
     fun currentIndex(tabView: View): Int {
         val row = tabView as? ViewGroup
@@ -343,10 +334,9 @@ internal object QQTabLocator {
     /**
      * 为背景页面容器安装平滑切页钩子。
      *
-     * 底栏触发的切换统一交给 ViewPager2 的平滑路径处理；页间距离不再限制为 1，
-     * pager 正在移动时也继续传递 `setCurrentItem(index, true)`，由 ViewPager2
-     * 自己重新定位当前动画目标，避免中途硬切造成回退。切换前仅把相邻页预加载，
-     * 远距离页仍由 ViewPager2 按需创建。
+     * 底栏触发的切换统一交给 ViewPager2 的平滑路径：页间距离不再限制为 1，pager 正在
+     * 移动时也继续传递 `setCurrentItem(index, true)`，由 ViewPager2 自己重新定位动画
+     * 目标，避免中途硬切造成回退。切换前仅预加载相邻页，远距离页仍按需创建。
      */
     fun tryHookPager(pager: ViewGroup?) {
         if (!TCQTSetting.getInt(LIQUID_GLASS_CONFIG_KEY).isFlagEnabled(SMOOTH_PAGE_SWITCH)) return

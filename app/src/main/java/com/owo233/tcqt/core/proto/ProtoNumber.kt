@@ -6,9 +6,8 @@ import kotlinx.serialization.json.JsonElement
 /**
  * Logical scalar encoding used by a numeric protobuf field.
  *
- * RAW_* variants are used when decoding without a descriptor. A protobuf wire
- * stream does not contain enough information to distinguish, for example,
- * int64 from uint64 or double from fixed64.
+ * RAW_* variants are used when decoding without a descriptor: the wire stream
+ * cannot distinguish int64 from uint64, or double from fixed64.
  */
 enum class ProtoNumberType {
     INT32,

@@ -28,7 +28,6 @@ object PicTypeEmoticon : Feature(
     desc = "可以保存一些不让保存的表情。",
 ), DexKitTask {
 
-    /** 派生 key = `pic_type_emoticon.type`。 */
     private val type by multiIntOption(
         settingKey = "type",
         name = "额外选项",

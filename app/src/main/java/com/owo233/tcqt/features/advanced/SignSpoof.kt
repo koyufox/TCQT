@@ -19,7 +19,6 @@ object SignSpoof : Feature(
     processes = setOf(ActionProcess.MAIN, ActionProcess.OPENSDK),
 ), DexKitTask {
 
-    /** 派生 key = `share_sign_spoof.string.customMap`。 */
     private val customMap by stringOption(
         settingKey = "string.customMap",
         name = "一行一条「包名,原始签名MD5」；分隔符支持英文逗号、中文逗号或空格。内置映射之外的包名在此追加，同名会覆盖内置值。",

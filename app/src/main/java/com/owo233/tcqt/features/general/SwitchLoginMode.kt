@@ -18,7 +18,6 @@ object SwitchLoginMode : Feature(
     processes = setOf(ActionProcess.MSF),
 ) {
 
-    /** 属性名沿用原来的局部变量名 `loginType`；派生 key = `switch_login_mode.type`。 */
     private val loginType by intOption(
         settingKey = "type",
         name = "登录类型",

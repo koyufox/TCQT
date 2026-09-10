@@ -119,8 +119,7 @@ object ZygiskEntry {
                     if (!libsUpToDate || !outFile.isFile) {
                         extractNativeLibrary(zip, entry, outFile)
 
-                        // Android 17+:
-                        // native libraries loaded through System.load() must be read-only.
+                        // Android 17+: System.load() requires native libraries to be read-only.
                         ensureReadOnly(outFile)
                     }
                 } catch (t: Throwable) {

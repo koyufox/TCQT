@@ -7,19 +7,15 @@ import com.owo233.tcqt.core.action.ActionUiType
  * 配置注册：把每个 [com.owo233.tcqt.core.action.ActionSpec] 声明的配置项
  * 展开成 `TCQTSetting` 的底层存储包装。
  *
- * 从 `SettingsRegistry.registerAllInto` 拆出。原实现里
- * `TCQTSetting.settingMap` 的 lazy 初始化会回调 `ActionManager`，形成
- * `core.config ↔ core.action` 的隐式双向依赖（Spec §3.6）；现在方向是
- * 单向的：`config → action`。
+ * 由 `TCQTSetting.settingMap` 的 lazy 初始化回调，依赖方向必须保持单向的
+ * `config → action`，否则会形成隐式双向依赖。
  */
 internal object SettingsRegistry {
 
     /**
      * 把全部 Action 的配置项注册进 [target]。
      *
-     * 规则与原实现逐字一致：
-     * - `uiType == SWITCH` 且 key 非空 → 把**功能开关本身**注册为 BOOLEAN
-     * - 每个 `settings` 项按其声明类型注册
+     * `uiType == SWITCH` 且 key 非空时先把功能开关本身注册为 BOOLEAN，随后按声明类型注册每个 `settings` 项。
      */
     fun registerAllInto(target: HashMap<String, TCQTSetting.Setting<out Any>>) {
         ActionRegistry.allActionClasses().forEach { actionClass ->

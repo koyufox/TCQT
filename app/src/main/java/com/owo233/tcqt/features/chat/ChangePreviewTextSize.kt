@@ -20,17 +20,13 @@ object ChangePreviewTextSize : Feature(
     desc = "修改双击启动预览界面的文本字体大小, 缩小方便预览和复制。",
 ) {
 
-    /** 派生 key = `change_preview_text_size.string.textSize`（与历史一致）。 */
     private val textSize by stringOption(
         settingKey = "string.textSize",
         name = "textSize",
         desc = "默认大小 14\n配置为空或无效值则使用默认大小\n",
     )
 
-    /**
-     * 原 `companion object` 里的 `configTextSize`。
-     * `class` 改 `object` 后 companion 不再合法，直接作为 object 成员。
-     */
+    /** 配置为空或无效值时用 14f。 */
     val configTextSize: Float
         get() = textSize.trim().toFloatOrNull()?.takeIf { it > 0f } ?: 14f
 

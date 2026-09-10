@@ -15,19 +15,16 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * 设置界面的功能目录：把运行时注册表转换成 UI 可渲染的表现模型。
  *
- * 从 `ActionManager` 拆出（Spec §5.1）。这是**唯一**允许依赖
- * `ui.settings.model`（`SettingFeature` / `FeatureOptionGroup` …）的地方；
- * `core` 不再 import 任何 Compose 表现类型。
+ * 这是**唯一**允许依赖 `ui.settings.model`
+ * （`SettingFeature` / `FeatureOptionGroup` …）的地方，`core` 不得 import 这些类型。
  */
 internal object FeatureCatalog {
 
     private val initReadyCache = ConcurrentHashMap<String, Boolean>()
 
     /**
-     * 查询功能是否满足执行条件（[com.owo233.tcqt.core.action.ActionSpec.onInit] 是否返回 true）。
-     *
-     * 仅供设置界面判断强制禁用状态使用。onInit 应保持为纯条件判断，
-     * 有副作用的初始化逻辑请放在 `onRun` 中。
+     * 查询功能是否满足执行条件（[com.owo233.tcqt.core.action.ActionSpec.onInit] 是否返回 true），
+     * 仅供设置界面判断强制禁用状态；结果带缓存，`onInit` 必须保持为纯条件判断。
      */
     fun isInitReady(key: String): Boolean {
         val action = ActionRegistry.getActionByKey(key) ?: return true

@@ -20,10 +20,8 @@ object MsgAntiRecall : Feature(
 ) {
 
     /**
-     * 派生 key = `msg_anti_recall.type`，必须等于 `AntiRecallConfig.SETTING_KEY`。
-     *
-     * 本功能只负责把这个配置项**注册**进设置界面（读写与旧 key 迁移都由
-     * `host/service/AntiRecallConfig` 承担），因此这里没有读取点。
+     * settingKey 必须与 `AntiRecallConfig.SETTING_KEY` 一致；本功能只负责把该项注册进
+     * 设置界面，读写与旧 key 迁移都由 `AntiRecallConfig` 承担，因此这里没有读取点。
      */
     @Suppress("unused")
     private val options by multiIntOption(

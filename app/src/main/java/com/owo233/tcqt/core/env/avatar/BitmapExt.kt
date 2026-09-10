@@ -1,6 +1,4 @@
-/**
- * https://github.com/HdShare/NullAvatar
- */
+/** https://github.com/HdShare/NullAvatar */
 
 package com.owo233.tcqt.core.env.avatar
 

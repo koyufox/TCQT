@@ -12,7 +12,6 @@ object HideRedPackSkin : Feature(
     key = "hide_red_pack_skin",
     name = "隐藏红包推荐皮肤",
     desc = "隐藏点击红包按钮后出现的红包皮肤推荐。",
-    // 原 `onInit() = HookEnv.isQQ()`
     requires = Requires(host = Requires.Host.QQOnly),
 ) {
 

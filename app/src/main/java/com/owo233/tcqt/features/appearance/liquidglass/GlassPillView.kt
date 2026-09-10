@@ -24,13 +24,12 @@ import kotlin.math.roundToInt
 /**
  * 静置状态的玻璃药丸表面。
  *
- * 渲染管线：以 `RenderNode` 捕获背景页面的绘制指令，先经
- * 「饱和度提升 → 高斯模糊」的 RenderEffect 链，再交给 AGSL 透镜做
- * 圆角矩形边缘折射，最后在其上叠加表面色垫、描边高光与拖拽时的
- * 交互辉光。表面色垫才是可读性的主要来源，模糊强度由设置页实时调节。
+ * 渲染管线：`RenderNode` 捕获背景页面的绘制指令，先经「饱和度提升 → 高斯模糊」的
+ * RenderEffect 链，再交给 AGSL 透镜做圆角矩形边缘折射，最后叠加表面色垫、描边高光
+ * 与拖拽时的交互辉光。表面色垫才是可读性的主要来源。
  *
- * 透镜采样范围超出自身边界，捕获区域需向四周各外扩一个折射量；
- * 绘制时再平移回来，使折射带内的采样坐标始终落在有效内容上。
+ * 透镜采样范围超出自身边界，捕获区域需向四周各外扩一个折射量；绘制时再平移回来，
+ * 使折射带内的采样坐标始终落在有效内容上。
  */
 internal class GlassPillView(
     context: Context,
@@ -95,9 +94,7 @@ internal class GlassPillView(
     fun isSupported() = supported
 
     /**
-     * 表面配色随主题切换。
-     *
-     * 深色采用深灰表面、微弱白色描边；浅色采用近白表面、稍强的白色描边，
+     * 表面配色随主题切换：深色用深灰表面与微弱白描边，浅色用近白表面与稍强白描边，
      * 模拟玻璃边缘的镜面反射。
      */
     fun setTheme(dark: Boolean) {
@@ -128,9 +125,8 @@ internal class GlassPillView(
     /**
      * 对 WRAP_CONTENT 父容器不贡献尺寸。
      *
-     * 宿主容器按底栏实际高度确定尺寸；本视图以非 EXACTLY 规格测量时
-     * 报告零尺寸，待 FrameLayout 后续以 EXACTLY 规格复测时再取真实值，
-     * 否则报出父容器全高会把宿主撑满整屏。
+     * 宿主容器按底栏实际高度确定尺寸；本视图以非 EXACTLY 规格测量时报告零尺寸，
+     * 待 FrameLayout 以 EXACTLY 规格复测时再取真实值，否则报出父容器全高会把宿主撑满整屏。
      */
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         setMeasuredDimension(
@@ -209,9 +205,9 @@ internal class GlassPillView(
     /**
      * 捕获背景、构建效果链并绘制折射结果。
      *
-     * 位置与缩放均取无变换值：拖拽时整栏被放大，按变换后的坐标采样
-     * 会得到放大而非展开的背景。效果链中所有 uniform 都是药丸尺寸的
-     * 函数，仅在尺寸变化时重建，避免每帧三个原生效果对象的反复分配。
+     * 位置与缩放均取无变换值：拖拽时整栏被放大，按变换后的坐标采样会得到放大而非
+     * 展开的背景。效果链的 uniform 都是药丸尺寸的函数，仅在尺寸变化时重建，
+     * 避免每帧反复分配原生效果对象。
      */
     private fun drawGlass(canvas: Canvas, w: Int, h: Int, renderNode: RenderNode, captureScale: Float) {
         val backdrop = backdropRef.get()

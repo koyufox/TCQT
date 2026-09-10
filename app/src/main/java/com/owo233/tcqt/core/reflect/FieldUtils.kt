@@ -4,9 +4,7 @@ import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
 /**
- * 兼容旧链式调用方式的字段工具。
- *
- * 实际搜索统一委托给 [FieldSearcher]，不再维护第二套缓存和类型匹配规则。
+ * 兼容旧链式调用方式的字段工具，实际搜索统一委托给 [FieldSearcher]。
  */
 object FieldUtils {
 

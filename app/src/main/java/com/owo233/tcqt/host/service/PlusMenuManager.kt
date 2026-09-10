@@ -6,13 +6,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * 主页右上角加号菜单的「额外选项」注册表。
  *
- * **本类不是 Action**。原 `PlusMenuManager` 既当宿主服务、又被 `@RegisterAction`
- * 注册成一个隐藏 Action，于是 `host` 层被迫依赖 `api` 门面（spec §3.1 明令禁止
- * `host → api`）。spec §4.2 的处置是：它归入 `host/service/` 并**退出注册**；
- * 菜单 hook 由可见功能 `features/menu/AddPlusMenu` 在自己的 `install()` 里安装。
- *
- * 行为等价：hook 只在该功能启用时才有意义 —— 功能被关掉时 `registerAll` 从不会
- * 被调用，菜单里本来也什么都不加。
+ * 本类不是 Action：菜单 hook 由可见功能 `features/menu/AddPlusMenu` 在自己的
+ * `install()` 里安装，条目也只在该功能启用时注册。
  */
 object PlusMenuManager {
 

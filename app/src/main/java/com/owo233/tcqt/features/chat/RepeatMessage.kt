@@ -40,10 +40,7 @@ object RepeatMessage : Feature(
     override val decoratorOrder: Int = 200
 
     /**
-     * 派生 key = `repeat_message.options`。
-     *
-     * 这一项**刻意不用 `by`**：解析旧 key 兜底时需要 `isSet()` / `value` 这些
-     * 元数据，而 `by` 委托会让属性本身退化成 `Int`（只剩值，拿不到 Option）。
+     * 刻意不用 `by`：解析旧 key 兜底需要 `isSet()` / `value` 这些元数据。
      */
     private val options = multiIntOption(
         settingKey = "options",
@@ -52,10 +49,7 @@ object RepeatMessage : Feature(
         options = listOf("单击触发复读", "显示图标", "显示长按菜单"),
     )
 
-    /**
-     * 读到的是**解析后**的选项掩码：新 key 从未被写过时回退到旧 key
-     * `repeat_message.type`，把用户的旧配置搬过来。
-     */
+    /** 解析后的选项掩码。 */
     private val repeatOptions: Int by lazy { resolveRepeatOptions() }
 
     override val targetComponentTypes: Array<String>
@@ -241,8 +235,8 @@ object RepeatMessage : Feature(
     }
 
     /**
-     * 旧契约把选项存在 `repeat_message.type` 里，新 key 是 `repeat_message.options`。
-     * 新 key 从未被写过时按旧语义（只认得「单击触发复读」这一位）折算。
+     * `repeat_message.options` 从未被写过时回退到旧 key `repeat_message.type`，
+     * 只认得「单击触发复读」这一位。
      */
     private fun resolveRepeatOptions(): Int {
         if (options.isSet()) return options.value

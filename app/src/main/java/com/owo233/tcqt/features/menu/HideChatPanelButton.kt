@@ -19,8 +19,7 @@ object HideChatPanelButton : Feature(
     desc = "移除聊天输入框下方的语音、相册、拍照等快捷按钮，并让剩余按钮自动重新排版。",
 ) {
 
-    // 必须声明在 `items` 之前：`items` 的 options 要用到它，而普通成员 val
-    // 是按声明顺序初始化的（它不是 const，没有编译期内联）。
+    // 必须声明在 `items` 之前：`items` 的 options 要用到它，普通 val 按声明顺序初始化。
     private val PANEL_ITEMS = listOf(
         // QQ 9.2.95: PanelIconLinearLayout.e(int, String, h) adds direct ImageView children
         // from AIOPanelIconItem(tag, contentDescription, drawable, resId).
@@ -32,7 +31,6 @@ object HideChatPanelButton : Feature(
         PanelItem("表情", tags = setOf(1001))
     )
 
-    /** 派生 key = `hide_chat_panel_button.items`。 */
     private val items by multiIntOption(
         settingKey = "items",
         name = "净化项目",

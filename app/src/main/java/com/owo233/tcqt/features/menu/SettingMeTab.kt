@@ -13,7 +13,6 @@ object SettingMeTab : Feature(
     key = "setting_me_tab",
     name = "转移设置页入口",
     desc = "将抽屉设置页面入口移动到下方我的Tab页面",
-    // 原 `onInit() = HookEnv.requireMinQQVersion(QQVersion.QQ_9_1_75)`
     requires = Requires(minQQVersion = QQVersion.QQ_9_1_75),
 ) {
 

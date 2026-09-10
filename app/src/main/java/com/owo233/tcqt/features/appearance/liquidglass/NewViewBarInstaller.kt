@@ -311,9 +311,8 @@ internal object NewViewBarInstaller {
                         ?: QQTabLocator.currentIndex(tabView)
                     if (layoutSyncPending) {
                         if (!scaleChanged) {
-                            // The previous pass requested new LayoutParams;
-                            // this pre-draw runs after that traversal and
-                            // therefore sees the final child bounds.
+                            // The previous pass requested new LayoutParams; this pre-draw runs
+                            // after that traversal and sees the final child bounds.
                             if (selected >= 0 && host.width > 0 && row.width > 0 && tabView.width > 0) {
                                 driver?.animateToIndex(selected, true)
                                 layoutSyncPending = false

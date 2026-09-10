@@ -7,13 +7,9 @@ import com.owo233.tcqt.core.hook.HookFramework
 /**
  * 声明式的功能可用性条件。
  *
- * 取代 `ActionSpec.onInit()` 里的手写判断。原契约要求 `onInit` 是**纯条件判断**，
- * 但框架会从设置界面路径调用它（`FeatureCatalog.isInitReady`），
- * 而 `features/message/RecallHeaderTip.kt` 曾在其中注册监听器（基线缺陷 D7）——
- * 那是陷阱：任何人把带副作用的判断注册成正式功能就会踩中。
- *
- * 现在 `Feature.onInit()` 是 final，作者**无法**在其间插入副作用；
- * 可用性只能用这个数据类声明。
+ * [Feature.onInit] 是 final（由本类求值），作者**无法**在其间插入副作用；可用性只能
+ * 用这个数据类声明。设置界面路径（`FeatureCatalog.isInitReady`）也会调用它，因此
+ * 所有条件必须是纯判断。
  *
  * ```kotlin
  * object ShowPreciseBanTime : Feature(
@@ -45,15 +41,11 @@ data class Requires(
     val nonZygiskOnly: Boolean = false,
 
     /**
-     * 逃生口：上面所有字段都表达不了时的**纯**谓词条件。
+     * 逃生口：上面所有字段都表达不了时的**纯**谓词条件（如 `LiquidGlassTabBar` 的
+     * 「NT 宿主 且（选了新视图 或 RuntimeShader 可用）」复合条件）。
      *
-     * `LiquidGlassTabBar` 需要「NT 宿主 **且**（用户选了新视图 **或** 系统支持
-     * RuntimeShader）」这种复合条件，无法拆成一个个独立字段。
-     *
-     * 两条纪律：
-     * 1. **必须是纯函数** —— 这里等价于旧契约的 `onInit`，而 D7 的教训正是
-     *    有人在 `onInit` 里注册监听器；[evaluate] 会在设置界面路径上被调用。
-     * 2. **优先用上面的声明式字段** —— 只有复合条件才用这个。
+     * 必须无副作用（[evaluate] 会在设置界面路径上被调用），且只有复合条件才用它，
+     * 优先用上面的声明式字段。
      */
     val extraCondition: (() -> Boolean)? = null,
 ) {

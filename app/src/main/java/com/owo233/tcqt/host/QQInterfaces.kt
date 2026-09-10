@@ -55,13 +55,13 @@ open class QQInterfaces {
             if (usePublic) Maple.PublicKernel else Maple.Kernel
         }
 
-        /** Initially, `getWrapperSession` may be null. */
+        /** `getWrapperSession` may be null during early init. */
         val msgService: IKernelMsgService
             get() = NTServiceFetcher.kernelService
                 .wrapperSession
                 .msgService
 
-        /** Initially, `getWrapperSession` may be null. */
+        /** `getWrapperSession` may be null during early init. */
         val groupService: IKernelGroupService
             get() = NTServiceFetcher.kernelService
                 .wrapperSession

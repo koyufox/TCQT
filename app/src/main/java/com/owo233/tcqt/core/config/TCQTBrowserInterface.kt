@@ -28,7 +28,6 @@ class TCQTBrowserInterface(private val ctx: Context) {
 
             // 如果值为null,返回空对象
             if (value == null) {
-                // Log.w("getSetting: key=$key, value is null, returning {}")
                 return "{}"
             }
 

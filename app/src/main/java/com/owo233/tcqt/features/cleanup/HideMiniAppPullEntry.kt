@@ -310,22 +310,10 @@ object HideMiniAppPullEntry : Feature(
         "com.qqnt.widget.smartrefreshlayout.layout.constant.RefreshState"
 
     // 版本适配维护区：按 [minVersion, maxVersionExclusive) 区间限制 Hook 点与字段名。
+    // 二级刷新开关的布尔字段名要在 onMoving / 状态切换逻辑里找（进入 ReleaseToTwoLevel 的那个）。
     //
-    // 维护方式：
-    // 1. 不要 Hook/替换 Conversation 的小程序初始化方法。该初始化同时绑定原生下拉刷新 listener，
-    //    替换整段会导致刷新可见但无法真正触发或结束。
-    // 2. 先在反编译结果中定位 com.tencent.mobileqq.activity.home.chats.biz.MiniAppRefreshPart。
-    //    如果该类存在，并且存在无参方法返回 com.qqnt.widget.smartrefreshlayout.header.TwoLevelHeader
-    //    或其子类，优先使用 HookPoint.MINI_APP_REFRESH_PART。
-    // 3. 再定位 com.qqnt.widget.smartrefreshlayout.header.TwoLevelHeader，确认“允许进入二级刷新”
-    //    的布尔字段名。判断方法：看 onMoving/状态切换逻辑中用于进入 ReleaseToTwoLevel 的 boolean。
-    //    当前已知：9.3.0 Beta 36720 为 t；9.1.70 ~ 9.2.95 为 I；更旧版本见下方规则。
-    // 4. 如果新版 MiniAppRefreshPart 结构消失，回退到 HookPoint.OLD_STYLE_HEADER，并从
-    //    MiniOldStyleHeaderNew / MiniOldStyleHeader 的父类链中确认 TwoLevelHeader 字段名。
-    // 5. 新增版本时优先新增一个窄范围规则，测试刷新开始、刷新结束、小程序页隐藏都正常后，
-    //    再考虑扩大 maxVersionExclusive 或移除上界。
-    //
-    // 本 Hook 的目标只是在 MiniApp Header 层禁用二级下拉并替换显示层，不接管刷新状态机。
+    // 不要 Hook/替换 Conversation 的小程序初始化方法：它同时绑定原生下拉刷新 listener，
+    // 替换整段会导致刷新可见但无法真正触发或结束。
     private val HOOK_RULES = listOf(
         HookRule(
             minVersion = QQVersion.QQ_9_3_0_BETA_36720,

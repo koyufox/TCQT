@@ -16,13 +16,13 @@ data class CategoryNode(
 // ───── Feature Models ─────
 @Immutable
 data class CategoryUiState(
-    /** Path segment name at this level, e.g. "过检测" */
+    /** Path segment name at this level */
     val name: String,
     /** Full path from root, e.g. "高级/过检测" */
     val fullPath: String,
-    /** Depth: 0 = root level, 1 = first sub-level, … */
+    /** 0 = root level, 1 = first sub-level, … */
     val depth: Int,
-    /** Human-readable label (from the main feature's label or same as name) */
+    /** Display label (main feature's label, else [name]) */
     val label: String,
     /** Sorting order */
     val uiOrder: Int,
@@ -30,22 +30,22 @@ data class CategoryUiState(
     val featureKeys: List<String>,
     /** Sub-categories (non-leaf) */
     val children: List<CategoryUiState>,
-    /** Whether this node is a leaf (has features, no further sub-categories) */
+    /** Leaf: has features, no sub-categories */
     val isLeaf: Boolean,
-    /** Number of enabled features under this entire subtree */
+    /** Enabled features in this whole subtree */
     val enabledCount: Int,
-    /** Total feature count under this entire subtree */
+    /** Total features in this whole subtree */
     val totalFeatureCount: Int
 )
 
 /**
- * A single breadcrumb segment for the top navigation bar.
+ * One breadcrumb segment for the top navigation bar.
  */
 @Immutable
 data class BreadcrumbItem(
-    /** Display name, e.g. "高级" */
+    /** Display name */
     val name: String,
-    /** Full path that clicking this breadcrumb should navigate to */
+    /** Path to navigate to when clicked */
     val fullPath: String
 )
 

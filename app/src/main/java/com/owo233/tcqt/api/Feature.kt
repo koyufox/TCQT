@@ -8,7 +8,7 @@ import com.owo233.tcqt.core.action.ActionUiType
 import com.owo233.tcqt.core.config.Setting
 
 /**
- * 功能作者的**唯一入口**。
+ * 功能的**唯一入口**。
  *
  * 一个功能 = 一个文件、一行框架 import（`import com.owo233.tcqt.api.*`）。
  * 元数据、配置项声明与 hook 安装都在同一个类里，且配置 key 由
@@ -32,18 +32,11 @@ import com.owo233.tcqt.core.config.Setting
  * }
  * ```
  *
- * ## 与 `core.action.ActionSpec` 的关系
+ * [ActionSpec] 是 `core` / `ui` 够得着的内部模型，本类实现它；功能作者只继承本类，
+ * `features/` 下直接实现 `ActionSpec` 会被 `SingleAuthoringContractTest` 检出。
  *
- * 本类实现 [ActionSpec]，但那是**管道**关系，不是"两套契约并存"：`ActionSpec` 是注册表
- * （`core`）与设置界面（`ui`）够得着的内部功能模型，因为 spec §3.1 禁止
- * `core`/`ui` 依赖 `api`，它无法被删除。对功能作者而言本类仍是唯一入口 ——
- * `SingleAuthoringContractTest` 保证 `features/` 下不会出现直接实现 `ActionSpec` 的类。
- * 详见 `docs/aegis/adr/ADR-006-action-plumbing-vs-authoring-contract.md`。
- *
- * ## 不可覆写的东西
- *
- * - [onInit] 是 final，由声明式 [Requires] 驱动 —— 见 [Requires] 的说明。
- * - [settings] 是 final，由 `by xxxOption(...)` 声明自动聚合。
+ * [onInit] 与 [settings] 都是 final：前者由声明式 [Requires] 驱动，后者由
+ * `by xxxOption(...)` 声明自动聚合。
  *
  * @param key 功能开关的持久化 key。**一经发布不可改名**。
  * @param name 设置界面显示名。
@@ -66,22 +59,20 @@ abstract class Feature(
     final override val uiType: ActionUiType = ActionUiType.SWITCH,
     val requires: Requires = Requires.None,
     /**
-     * 运行期才能确定的默认开关状态。
+     * 运行期才能确定的默认开关状态，提供时优先于 [defaultEnabled] 字面量。
      *
-     * 极少数功能的默认值取决于宿主环境（例如 `ModuleUpdate` 只在非 Zygisk
-     * 且 `apiLevel < 102` 时默认开启）。提供时优先于 [defaultEnabled] 字面量；
-     * 其余功能继续用字面量，不必感知这个参数。
+     * 例如 `ModuleUpdate` 只在非 Zygisk 且 `apiLevel < 102` 时默认开启。
      */
     private val defaultEnabledProvider: (() -> Boolean)? = null,
 ) : ActionSpec, PipelineDecorator {
 
-    /** 构造参数里的字面量默认值，仅在未提供 [defaultEnabledProvider] 时使用。 */
+    /** [defaultEnabledProvider] 为 null 时使用的字面量默认值。 */
     private val defaultEnabledLiteral: Boolean = defaultEnabled
 
     final override val defaultEnabled: Boolean
         get() = defaultEnabledProvider?.invoke() ?: defaultEnabledLiteral
 
-    /** 由 `by xxxOption(...)` 工厂在子类属性初始化时填充。 */
+    /** 由 `by xxxOption(...)` 在子类属性初始化时填充。 */
     private val declaredOptions = mutableListOf<Option<*>>()
 
     /** 声明即注册：把 Option 投影成既有 `Setting` 给注册表与设置界面消费。 */
@@ -92,16 +83,13 @@ abstract class Feature(
     final override fun onInit(): Boolean = requires.evaluate()
 
     /**
-     * 作为管线装饰器时的可用性 —— 与框架启动路径 [ActionSpec.invoke] 的判据一致。
-     *
-     * 管线不再需要 `filterIsInstance<ActionSpec>()` + `it.canRun() && it.onInit()`：
-     * 装饰器接口自己就带这个能力（见 [PipelineDecorator]）。
+     * 作为管线装饰器时的可用性，与框架启动路径 [ActionSpec.invoke] 的判据一致。
      *
      * [activate] 保持空实现：注册 Action 的安装由框架走 [install]，管线不重复触发。
      */
     final override fun isAvailable(): Boolean = canRun() && onInit()
 
-    /** 安装 hook。取代旧的 `onRun(app, process)`。 */
+    /** 安装 hook。 */
     protected abstract fun install()
 
     final override fun onRun(app: Application, process: ActionProcess) {
@@ -111,30 +99,23 @@ abstract class Feature(
     }
 
     /**
-     * 宿主 `Application`，即旧契约 `onRun(app, process)` 的第一个参数。
+     * 宿主 `Application`，由框架在调用 [install] 之前注入。
      *
      * 少数功能需要它做进程级注册（例如 `ModuleUpdate` 注册广播接收器）。
-     * 由框架在调用 [install] 之前注入，因此功能代码不必再去 `core.env` 里
-     * 找 `HookEnv.hostAppContext`（它还是 `Context` 类型）。
      */
     protected val hostApp: Application
         get() = hostAppRef ?: error("宿主 Application 尚未就绪；只能在 install() 及之后访问")
 
     /**
-     * 当前宿主进程，即旧契约 `onRun(app, process)` 的第二个参数。
+     * 当前宿主进程，由框架在调用 [install] 之前注入。
      *
      * 少数功能要按进程安装不同的 hook（例如 `SkipQRLoginWait` 在 `MAIN` 与
-     * `OPENSDK` 里各 hook 一处）。提供成属性而不是 `install(app, process)`
-     * 参数，是为了让 90 个功能里绝大多数都不必为一个用不到的参数去 import
-     * `Application` / `ActionProcess`。
+     * `OPENSDK` 里各 hook 一处）。
      */
     protected val currentProcess: ActionProcess
         get() = processRef ?: error("宿主进程尚未就绪；只能在 install() 及之后访问")
 
-    /**
-     * 用 `@Volatile` 是因为 [onRun] 可能在后台线程被调用，而 hook 回调
-     * 之后会在别的线程读取这两个字段。
-     */
+    /** hook 回调之后会在别的线程读取这两个字段，故用 `@Volatile`。 */
     @Volatile
     private var hostAppRef: Application? = null
 
@@ -143,8 +124,8 @@ abstract class Feature(
 
     // ── 配置项声明工厂 ──────────────────────────────────────────────────────
     //
-    // 全部 protected：只能从 Feature 子类体内调用，且会把生成的 Option 自动
-    // 注册进 declaredOptions，因此作者不需要（也无法）手写 settings 列表。
+    // 全部 protected：只能从子类体内调用，且会把生成的 Option 自动注册进
+    // declaredOptions，作者不需要（也无法）手写 settings 列表。
 
     /** 布尔配置项（只持久化，不渲染界面组件）。 */
     protected fun booleanOption(

@@ -30,7 +30,6 @@ object FakeNetworkStatus : Feature(
     ),
 ) {
 
-    /** 派生 key = `fake_network_status.mode`。 */
     private val networkMode by intOption(
         settingKey = "mode",
         name = "伪装网络类型",

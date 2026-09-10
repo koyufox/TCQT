@@ -33,7 +33,7 @@ object FileRecvRedirect : Feature(
 
     /**
      * `VFSAssistantUtils.getSDKPrivatePath` 在宿主 onCreate 期间就会被调用，
-     * 第一次调用不能漏，因此必须在 onCreate Before 中同步安装。
+     * 第一次调用不能漏，必须在 onCreate Before 中同步安装。
      */
 
     override fun install() {

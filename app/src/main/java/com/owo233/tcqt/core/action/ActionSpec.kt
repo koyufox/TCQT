@@ -18,19 +18,18 @@ enum class ActionProcess {
 }
 
 /**
- * 功能启动优先级。
+ * 功能启动优先级，由 [StartupScheduler] 据此分批安装。
  *
- * 宿主 `BaseApplicationImpl.onCreate` 的 Before 回调里只会**同步**安装
- * [CRITICAL]，其余优先级由 [com.owo233.tcqt.core.action.StartupScheduler] 在
- * onCreate 返回后于后台分批安装，从而让「白屏时间」不再随启用功能数量线性增长。
+ * 宿主 `BaseApplicationImpl.onCreate` 的 Before 回调只**同步**安装 [CRITICAL]，
+ * 其余优先级都在 onCreate 返回后转后台线程安装。
  */
 enum class ActionPriority {
 
     /**
-     * 必须在宿主 Application.onCreate 返回之前同步安装。
+     * 必须在宿主 `Application.onCreate` 返回前同步安装。
      *
-     * 只允许「目标方法在 onCreate 执行期间就会被调用，且第一次调用不能漏」的
-     * 功能使用（例如 [com.owo233.tcqt.features.advanced.FileRecvRedirect]）。
+     * 仅限「目标方法在 onCreate 执行期间就会被调用、且第一次调用不能漏」的功能
+     * （如 [com.owo233.tcqt.features.advanced.FileRecvRedirect]）。
      * 数量必须严格控制，否则白屏时间会随 CRITICAL 数量线性增长。
      */
     CRITICAL,
@@ -52,28 +51,11 @@ enum class ActionPriority {
 }
 
 /**
- * **注册表与设置界面的内部管道契约 —— 功能作者不要实现它。**
+ * 注册表与设置界面的内部功能模型 —— **功能作者不要实现它**。
  *
- * 功能作者唯一该继承的是 `com.owo233.tcqt.api.Feature`（或 `api.InfraTask`），
- * 它实现本接口并额外提供派生 key、声明式 `Requires`、`install()` 约定与
- * `PipelineDecorator` 能力。`SingleAuthoringContractTest` 机械地保证了
- * `features/` 与 `host/` 下不会出现直接实现本接口的类。
- *
- * ## 为什么它没有被删掉
- *
- * S2b 之后曾计划"删掉本接口，让 `Feature` 独立存在"。实施时发现这与 spec §3.1
- * 的层次表冲突：
- *
- * - `core` 不得依赖 `api`，而 [ActionRegistry] 就在 `core.action`，它必须持有功能类型；
- * - `ui` 也不得依赖 `api`，而 `ui.settings.FeatureCatalog` 要读功能的
- *   `key/name/desc/uiTab/uiOrder/uiType/hidden/settings`。
- *
- * 也就是说，注册表与设置界面需要一个**层次上够得着**的功能模型，而它只能放在
- * `core`。所以本接口不是"另一套与 `Feature` 并存的功能契约"，而是
- * "内部模型 + 作者门面"的分工。要么保留它，要么把注册表搬出 `core`
- * （会连带破坏 `ui` 的依赖方向）—— 前者是唯一不违反层次表的解。
- *
- * 详见 `docs/aegis/adr/ADR-006-action-plumbing-vs-authoring-contract.md`。
+ * 作者唯一该继承的是 `com.owo233.tcqt.api.Feature`（或 `api.InfraTask`），由它实现本接口。
+ * [ActionRegistry] 与设置界面都靠本接口读取功能元数据，而 `core` / `ui` 都不允许依赖 `api`，
+ * 因此本接口必须留在 `core`。
  */
 interface ActionSpec {
 
@@ -82,11 +64,9 @@ interface ActionSpec {
     val desc: String get() = ""
 
     /**
-     * 设置界面分类。**由包路径唯一决定（目录即分类），功能不再声明它。**
+     * 设置界面分类，**由类所在的 `features/<分类>/` 包路径唯一决定**，功能不要声明它。
      *
-     * 唯一真相是该类所在的 `features/<分类>/` 目录；[FeatureCategories] 只负责把
-     * 包名翻译成给人看的标签。这样"搬文件"与"改分类"是同一件事，
-     * 不会再出现目录树与设置界面各说各话。
+     * 包名到标签的翻译由 [FeatureCategories] 负责。
      */
     val uiTab: String
         get() = FeatureCategories.labelOf(this.javaClass.name) ?: FeatureCategories.FALLBACK
@@ -102,24 +82,19 @@ interface ActionSpec {
     /**
      * 启动优先级，默认 [ActionPriority.DEFERRED]。
      *
-     * 绝大多数功能不需要覆盖：只有目标方法在宿主
-     * [android.app.Application.onCreate] 执行期间就会被调用、且第一次调用
-     * 不能漏时，才应提升为 [ActionPriority.CRITICAL]。
+     * 仅当目标方法在宿主 [android.app.Application.onCreate] 执行期间就会被调用、
+     * 且第一次调用不能漏时才提升为 [ActionPriority.CRITICAL]。
      */
     val priority: ActionPriority get() = ActionPriority.DEFERRED
 
     /**
-     * 获取配置项的动态描述
-     * @param key 配置项键名
-     * @return 动态描述内容，返回 null 时将使用静态描述作为后备
+     * 配置项的动态描述；返回 null 时回退到静态描述。
      */
     fun getSettingDesc(key: String): String? = null
 
     operator fun invoke(app: Application, process: ActionProcess) {
         ActionErrorStore.withAction(key) {
-            // A host restart starts a fresh health check for this feature in
-            // this process. Any failure below (or in a later hook callback)
-            // writes the error back immediately.
+            // 每次宿主启动都重新开始健康检查，下方任一失败都会立即上报。
             ActionErrorStore.clear(key, com.owo233.tcqt.core.env.HookEnv.processName)
             runCatching {
                 if (canRun() && onInit()) {
@@ -147,12 +122,10 @@ interface ActionSpec {
     }
 
     /**
-     * 功能执行条件判断（模块设置界面会调用它来决定是否强制禁用该功能）。
+     * 功能执行条件判断；设置界面会调用它来决定是否禁用该功能。
      *
-     * 保持为纯条件判断，不要在这里执行 Hook 安装、配置写入等副作用；
-     * 这类初始化逻辑应放在 [onRun] 中。
-     *
-     * @return true 表示满足执行条件，继续执行后续 onRun 函数；false 则不执行
+     * 必须保持纯条件判断，不要在这里做 Hook 安装、配置写入等副作用（放 [onRun]）。
+     * 返回 true 才会继续执行 [onRun]。
      */
     fun onInit(): Boolean = true
 

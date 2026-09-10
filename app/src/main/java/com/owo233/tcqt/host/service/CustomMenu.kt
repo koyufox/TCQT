@@ -62,7 +62,6 @@ internal object CustomMenu {
             val factory = try {
                 MenuItemFactory.build(clazz)
             } catch (_: Throwable) {
-                // Log.w("CustomMenu: 候选类 $name 不适用,跳过 (${e.message})", e)
                 failedProbes = failedProbes + (name to clazz)
                 continue
             }
@@ -165,10 +164,9 @@ internal object CustomMenu {
             private const val AIO_MSG_ITEM = "com.tencent.mobileqq.aio.msg.AIOMsgItem"
 
             /**
-             * 决定两个 int 抽象方法哪个是 icon、哪个是 id。
-             * 优先用历史方法名映射(所有已知版本 icon 方法名都是 b、id 都是 c);
-             * 只识别出其中一个时,另一个直接取剩余方法,不再排序(避免排序颠倒已识别语义);
-             * 两个都未知时回退到名字排序,并打 warning 提醒人工核对映射表。
+             * 决定两个 int 抽象方法哪个是 icon、哪个是 id：
+             * 优先用历史方法名映射；只识别出其中一个时另一个取剩余方法(不排序，避免颠倒)；
+             * 都不认识时按名字排序并打 warning 提醒人工核对映射表。
              */
             private fun assignIntRoles(intMethods: List<Method>): Pair<Method, Method> {
                 val icon = intMethods.firstOrNull { it.name in iconMethodNames }

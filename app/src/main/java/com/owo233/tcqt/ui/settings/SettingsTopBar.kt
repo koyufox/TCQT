@@ -179,7 +179,6 @@ internal fun TopBar(
                 }
 
                 SettingsTopBarMode.SubPage -> {
-                    // ─── Sub-page: back + breadcrumbs + search ───
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -194,7 +193,7 @@ internal fun TopBar(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        // Scrollable breadcrumbs to prevent wrapping/clipping
+                        // Scrollable so long breadcrumbs do not wrap/clip
                         val scrollState = rememberScrollState()
                         LaunchedEffect(state.breadcrumbs.size) {
                             scrollState.animateScrollTo(scrollState.maxValue)

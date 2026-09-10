@@ -8,11 +8,9 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * 「上层能力注入 core」的唯一通道。
  *
- * core 不得依赖 `host` / `ui` / `loader`（Spec §3.1），但启动流程里 core
- * 确实需要两件只有上层才知道的事：当前顶层 Activity、以及宿主 Application
- * 就绪后的初始化钩子。这里把它们定义成空注册点，由 `loader` 在装配阶段填实现。
- *
- * 保持**窄**：目前只有 2 个注册点。若将来超过 3 个，应改为接口 + 多实现注册表。
+ * core 不得依赖 `host` / `ui` / `loader`，但启动流程需要两件只有上层才知道的事：
+ * 当前顶层 Activity、宿主 Application 就绪后的初始化钩子。这里定义空注册点，
+ * 由 `loader` 在装配阶段填实现。保持窄。
  */
 object HostBridge {
 

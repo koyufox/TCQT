@@ -16,7 +16,6 @@ object DisableReactionLimit : Feature(
     key = "disable_reaction_limit",
     name = "禁止过滤反应表情",
     desc = "将更多的表情（Emoji）显示出来。",
-    // 原 `onInit() = HookEnv.isQQ()`
     requires = Requires(host = Requires.Host.QQOnly),
 ) {
 
@@ -30,7 +29,6 @@ object DisableReactionLimit : Feature(
             }) { null }
         }
 
-        // 有意义吗？
         load("com.tencent.mobileqq.aio.msglist.holder.component.msgtail.utils.a")
             ?.declaredMethods
             ?.single {

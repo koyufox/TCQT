@@ -29,8 +29,8 @@ import kotlin.time.Duration.Companion.milliseconds
 internal object TicketManager {
 
     /**
-     * `AddModuleEntrance` 的开关 key。与 `features/advanced/AddModuleEntrance.kt`
-     * 里 `ActionSpec.key` 的值必须一致 —— D1 就是这两处不一致造成的。
+     * `AddModuleEntrance` 的开关 key，必须与 `features/advanced/AddModuleEntrance.kt`
+     * 中 `ActionSpec.key` 的值一致。
      */
     private const val ADD_MODULE_ENTRANCE_KEY = "add_module_entrance"
 
@@ -39,11 +39,6 @@ internal object TicketManager {
     private var thirdSigService: Any? = null
 
     init {
-        // 修复 D1（基线 §5.1 / §14）：此处原读 `add_module_entrance.boolean.ShowAttachedEntries`，
-        // 但该 key 的声明已在 fc2ce41（2026-05-26 `refactor: ActionSpec 接口定义`）被删除，
-        // 而 AddModuleEntrance 自身的读取改成了它的开关 key `add_module_entrance` —— 唯独漏改这里。
-        // 结果是下面的 IsNeedLoginWithPasswd hook 自 2026-05-26 起从未安装。
-        // 证据链：3686108（引入声明）→ f47e156（加本处读取）→ fc2ce41（删声明、漏改本处）。
         if (TCQTSetting.getBoolean(
                 ADD_MODULE_ENTRANCE_KEY
             ) && HookEnv.requireMinQQVersion(QQVersion.QQ_9_2_70)) {

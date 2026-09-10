@@ -27,16 +27,12 @@ import java.util.WeakHashMap
 /**
  * 消息防撤回的「顶部提醒」渲染器。
  *
- * **它不是注册 Action**，因此框架永远不会调它的 `install()`，也永远不会调它的
- * `onRun` —— 这个事实正是基线缺陷 D7 的成因：旧契约下它只能把"注册撤回监听器"
- * 这种副作用塞进 `onInit()`，靠 `AIOViewUpdate` 管线筛选装饰器时顺带执行。
+ * **它不是注册 Action**：框架不会调它的 `install()` / `onRun`，它只实现
+ * [OnAIOViewUpdate]（即 [com.owo233.tcqt.api.PipelineDecorator]）——
+ * [isAvailable] 做纯判断，[activate] 负责一次性注册撤回监听器。
  *
- * 现在它只实现 [OnAIOViewUpdate]（即 [com.owo233.tcqt.api.PipelineDecorator]）：
- * - [isAvailable] 是**纯判断**（顶部提醒开关 && `msg_anti_recall` 功能开关）；
- * - [activate] 负责一次性注册监听器。
- *
- * 开关沿用 `MsgAntiRecall` 的（本装饰器没有自己的 Action 开关），因此直接问
- * 那个功能要 `canRun()`，而不是手写 `"msg_anti_recall"` 字符串。
+ * 开关沿用 `MsgAntiRecall` 的（它没有自己的 Action 开关），因此直接问那个功能要
+ * `canRun()`，而不是手写 `"msg_anti_recall"` 字符串。
  */
 class RecallHeaderTip : OnAIOViewUpdate {
 
@@ -52,7 +48,7 @@ class RecallHeaderTip : OnAIOViewUpdate {
     private val boundLayouts = WeakHashMap<ViewGroup, MessageLayout>()
     private var listenerRegistered = false
 
-    /** `msg_anti_recall` 功能开关（旧契约下等价于 `ActionSpec.canRun()`）。 */
+    /** `msg_anti_recall` 功能开关。 */
     private val featureEnabled: Boolean
         get() = MsgAntiRecall.canRun()
 

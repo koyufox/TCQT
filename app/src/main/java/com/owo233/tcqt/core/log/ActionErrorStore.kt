@@ -10,11 +10,9 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 /**
- * Keeps the latest failure for each feature so the settings UI can show an
- * actionable error instead of requiring the user to search the global log.
- *
- * Records live in the host application's private files directory. This makes
- * them visible to all QQ/TIM processes without introducing another IPC layer.
+ * Keeps the latest failure for each feature so the settings UI can show an actionable
+ * error instead of making the user search the global log. Records live in the host app's
+ * private files directory, visible to all QQ/TIM processes without another IPC layer.
  */
 internal object ActionErrorStore {
 
@@ -73,9 +71,8 @@ internal object ActionErrorStore {
     }
 
     /**
-     * Returns every current-version record, including separate host processes
-     * for the same feature. The settings overview may collapse these by key,
-     * while diagnostic exports should retain all of them.
+     * Returns every current-version record, one per host process per feature; the settings
+     * overview may collapse them by key, diagnostic exports should keep them all.
      */
     fun readAllRecords(): List<Record> {
         val directory = errorDirectory() ?: return emptyList()

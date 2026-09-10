@@ -1,5 +1,4 @@
-// This feature is ported and modified from WeChat-LiquidGlass (originally written in Java)
-// Now reimplemented in Kotlin with additional features.
+// Ported and modified from WeChat-LiquidGlass
 // Source: https://github.com/liuran001/WeChat-LiquidGlass
 // License: MIT, see THIRD_PARTY_LICENSES for full copyright and license text.
 
@@ -30,11 +29,11 @@ object LiquidGlassTabBar : Feature(
     desc = "使用悬浮底栏替换 QQ 原生底部导航栏。",
     priority = ActionPriority.CRITICAL,
     /**
-     * 原 `onInit()` 是复合条件，拆不成独立字段，因此用 `extraCondition`：
+     * 复合条件无法拆成独立字段，故用 `extraCondition`：
      * `HookEnv.isNT() && (新视图实现 || SDK >= TIRAMISU)`。
      *
      * 经典实现的折射管线依赖 RuntimeShader；新视图的普通模式可在更低版本工作。
-     * 「在 TIM 上有些 BUG 但我们不做屏蔽处理」—— 只保留 NT 判断。
+     * TIM 上有已知 BUG，不做屏蔽，只保留 NT 判断。
      */
     requires = Requires(
         ntOnly = true,
@@ -46,7 +45,7 @@ object LiquidGlassTabBar : Feature(
     ),
 ) {
 
-    // 声明顺序 = 设置界面的渲染顺序，与原 `settings` 列表保持一致。
+    // 声明顺序 = 设置界面的渲染顺序。
     // 派生 key 必须逐个等于 FloatingBottomBarConfigStore / QQTabLocator 里的常量
     // （由 DerivedKeyCompatibilityTest 钉住）。
     private val implementation by intOption(
@@ -110,9 +109,8 @@ object LiquidGlassTabBar : Feature(
     /**
      * 挂钩底栏的切换方法。
      *
-     * 只挂钩底栏类自身声明的方法：若挂到基类，进程内所有同类控件
-     * 都会被波及。新旧两套底栏并存在于同一安装包中，通常只有一套
-     * 实际存在，缺失的一套按预期跳过。
+     * 只挂钩底栏类自身声明的方法：挂到基类会波及进程内所有同类控件。
+     * 新旧两套底栏并存于同一安装包，通常只有一套实际存在，缺失的一套跳过。
      */
     private fun hookTabSwitch() {
         var hooked = 0
@@ -147,10 +145,8 @@ object LiquidGlassTabBar : Feature(
     }
 
     /**
-     * 挂钩 Activity 恢复回调。
-     *
-     * 主界面构建为异步过程，底栏可能在恢复后数秒才出现，此处触发
-     * 限时轮询兜底；底栏切换钩子才是首选的安装触发点。
+     * 挂钩 Activity 恢复回调：主界面异步构建，底栏可能数秒后才出现，
+     * 此处触发限时轮询兜底；底栏切换钩子才是首选的安装触发点。
      */
     private fun hookActivityResume() {
         Instrumentation::class.java

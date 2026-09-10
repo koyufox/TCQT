@@ -31,7 +31,6 @@ object RenameBaseApk : Feature(
     /** 装配顺序：发送前管线目前只有它。 */
     override val decoratorOrder: Int = 100
 
-    /** 属性名沿用原来的 `options`；派生 key = `rename_base_apk.type`。 */
     private val options by multiIntOption(
         settingKey = "type",
         name = "可选项",

@@ -12,7 +12,6 @@ import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 @RegisterAction
 object AIOSendMsgBefore : InfraTask(
     key = "AIOSendMsgBefore",
-    // 原 `onInit() = HookEnv.isNT()`
     requires = Requires(ntOnly = true),
 ) {
 

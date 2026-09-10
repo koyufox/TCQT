@@ -18,7 +18,6 @@ object CustomDevice : Feature(
     processes = setOf(ActionProcess.ALL),
 ) {
 
-    // 属性名沿用原来 companion object 里的 lazy 名，读写点无需修改。
     private var device by stringOption(
         settingKey = "string.device",
         name = "设备代号",

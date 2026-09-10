@@ -22,8 +22,7 @@ import top.yukonga.miuix.kmp.basic.Button as MiuixButton
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 
 /**
- * Keeps the existing semantic color and typography names while sourcing every value from Miuix.
- * This makes feature UI code readable and prevents Material and Miuix themes from being mixed.
+ * Material-named shim over Miuix; every value comes from Miuix so the two themes cannot mix.
  */
 object MaterialTheme {
     val colorScheme: CompatColorScheme
@@ -47,9 +46,7 @@ class CompatColorScheme(private val colors: Colors) {
     val secondaryContainer: Color get() = colors.secondaryContainer
     val onSecondaryContainer: Color get() = colors.onSecondaryContainer
     val background: Color get() = colors.background
-    // Existing call sites use `surface` for cards and grouped settings containers.
-    // Miuix's own Card defaults to surfaceContainer, which keeps cards lighter than
-    // the page in dark mode and avoids the harsh black-on-gray hierarchy.
+    // Cards / grouped settings containers; Miuix's own Card also defaults to surfaceContainer.
     val surface: Color get() = colors.surfaceContainer
     val surfaceVariant: Color get() = colors.surfaceVariant
     val onSurface: Color get() = colors.onSurface
@@ -75,8 +72,8 @@ class CompatTypography(private val styles: TextStyles) {
 }
 
 /**
- * Content-slot variant used by existing call sites. Miuix's public TextButton accepts a String,
- * while TCQT also places icons and styled text in text actions.
+ * Content-slot TextButton: Miuix's public TextButton only accepts a String, but call sites also
+ * put icons and styled text in text actions.
  */
 @Composable
 fun TextButton(
@@ -117,7 +114,7 @@ fun OutlinedButton(
 }
 
 /**
- * Material-style slot API backed by Miuix WindowDialog, used for existing confirmation flows.
+ * Material-style slot API backed by Miuix `WindowDialog`.
  */
 @Composable
 fun AlertDialog(

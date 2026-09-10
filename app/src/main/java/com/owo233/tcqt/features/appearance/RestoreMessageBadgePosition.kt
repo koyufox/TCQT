@@ -22,7 +22,6 @@ object RestoreMessageBadgePosition : Feature(
     name = "还原消息红点气泡位置",
     desc = "将会话列表的未读消息红点气泡移动到消息区域右下角，并隐藏多余的免打扰图标。",
     priority = ActionPriority.EARLY,
-    // 原 `onInit() = HookEnv.isQQ()`
     requires = Requires(host = Requires.Host.QQOnly),
 ), DexKitTask {
 

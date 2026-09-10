@@ -25,8 +25,6 @@ object MiniAppShare : Feature(
             val module = param.args[0] as String
             if (module != "MiniMsgIPCServer") return@hookMethodBefore
 
-            // Log.d("MiniAppShare 当前进程处于: ${ProcUtil.currentProcName}")
-
             when (param.args[1] as String) {
                 "cmd_mini_share_fail" -> {
                     param.args[1] = "cmd_mini_share_suc"

@@ -259,20 +259,13 @@ val Any?.shortClassName: String
         else -> this.javaClass.name.substringAfterLast('.')
     }
 
-/**
- * 检查指定索引的位标志是否启用
- * @param index 索引值，从0开始（0表示第1个选项，对应位值 1 shl 0 = 1）
- * @return true 该位已启用，false 未启用
- */
+/** 检查第 [index] 位（0-based，对应 `1 shl index`）是否启用。 */
 fun Int.isFlagEnabled(index: Int): Boolean {
     require(index >= 0) { "Index must be non-negative" }
     return (this and (1 shl index)) != 0
 }
 
-/**
- * 将 Int 转为大端序字节数组（4字节）
- * 例如：94124 -> [0x00, 0x01, 0x6F, 0xAC]
- */
+/** 转为大端序 4 字节数组。 */
 fun Int.toBytes(): ByteArray {
     return byteArrayOf(
         (this shr 24 and 0xFF).toByte(),
@@ -282,10 +275,7 @@ fun Int.toBytes(): ByteArray {
     )
 }
 
-/**
- * 将 Int 转为小端序字节数组（4字节）
- * 例如：94124 -> [0xAC, 0x6F, 0x01, 0x00]
- */
+/** 转为小端序 4 字节数组。 */
 fun Int.toBytesLittleEndian(): ByteArray {
     return byteArrayOf(
         (this and 0xFF).toByte(),
@@ -295,10 +285,7 @@ fun Int.toBytesLittleEndian(): ByteArray {
     )
 }
 
-/**
- * 将 Int 转为字节数组，并自动省略前导零（至少保留1个字节）
- * 例如：94124 -> [0x01, 0x6F, 0xAC]（省略前导0x00）
- */
+/** 转为大端序字节数组并省略前导零，至少保留 1 个字节。 */
 fun Int.toCompactBytes(): ByteArray {
     var temp = this
     val list = mutableListOf<Byte>()

@@ -16,8 +16,7 @@ object SimplifyQQSettingMe : Feature(
     desc = "对侧滑栏功能入口进行精简隐藏。",
 ) {
 
-    // 必须声明在 `options` 之前：`options` 的选项标签由它派生，而普通成员
-    // val 是按声明顺序初始化的（它不是 const，没有编译期内联）。
+    // 必须声明在 `options` 之前：`options` 的选项标签由它派生，普通 val 按声明顺序初始化。
     private val map: Map<String, String> = linkedMapOf(
         "d_album" to "相册",
         "d_favorite" to "收藏",
@@ -28,7 +27,6 @@ object SimplifyQQSettingMe : Feature(
         "d_vip_card" to "免流量"
     )
 
-    /** 派生 key = `simplify_qq_setting_me.type`。 */
     private val options by multiIntOption(
         settingKey = "type",
         name = "要精简的项目",

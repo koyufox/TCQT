@@ -13,7 +13,6 @@ object RemoveReplyMsgCheck : Feature(
     key = "remove_reply_msg_check",
     name = "移除回复消息不存在限制",
     desc = "常见于解决‘转发的聊天记录中不包含该内容’的提示，允许查看回复消息。",
-    // 原 `onInit() = HookEnv.isQQ() && HookEnv.requireMinQQVersion(QQVersion.QQ_9_1_75)`
     requires = Requires(host = Requires.Host.QQOnly, minQQVersion = QQVersion.QQ_9_1_75),
 ) {
 

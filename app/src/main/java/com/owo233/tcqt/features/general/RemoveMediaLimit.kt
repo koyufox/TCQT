@@ -32,7 +32,7 @@ object RemoveMediaLimit : Feature(
             "com.tencent.mobileqq.wink.picker.core.viewmodel.WinkSelectedMediaViewModel"
         )
             .declaredMethods
-            .filter { method -> // 为什么有两个符合条件的方法!!!，都hook罢!
+            .filter { method -> // 有两个符合条件的方法，都 hook
                 method.isPublic && method.emptyParam && method.returnType == Boolean::class.java
             }.forEach { method ->
                 method.hookBefore { param ->

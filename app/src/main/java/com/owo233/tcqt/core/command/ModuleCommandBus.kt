@@ -6,9 +6,7 @@ import android.content.Intent
 /**
  * 向模块自身广播命令。
  *
- * 从 `ModuleCommand` 的 companion 拆出：`ui`（SettingActivity）与 `core`
- * （DexKitFinder）都要发命令，若留在 `features` 会形成反向依赖。
- * 接收端仍在 `features/internal/ModuleCommand.kt`。
+ * 接收端在 `features/internal/ModuleCommand.kt`。
  */
 object ModuleCommandBus {
 

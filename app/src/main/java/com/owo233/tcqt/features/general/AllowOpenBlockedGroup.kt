@@ -16,8 +16,6 @@ object AllowOpenBlockedGroup : Feature(
     key = "allow_open_blocked_group",
     name = "允许打开被封禁群组",
     desc = "解除被封禁群组无法进入聊天页面的限制。",
-    // 原 `onInit() = !HookEnv.isTIM()`；宿主只有 QQ 与 TIM 两种，
-    // 因此「不是 TIM」等价于 QQ 宿主限定。
     requires = Requires(host = Requires.Host.QQOnly),
 ) {
 

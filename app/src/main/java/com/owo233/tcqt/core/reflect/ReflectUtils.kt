@@ -231,22 +231,12 @@ private fun Any.fieldReceiver(field: Field): Any? {
 // ==================== JSON Serialization ====================
 
 /**
- * 将任意对象转换为JSON格式字符串，通过反射获取所有字段。
+ * 将任意对象转换为 JSON 字符串：反射遍历实例字段递归序列化，支持基本类型及其包装类、
+ * String/Char、Enum（name + ordinal）、数组、Iterable/Map/Sequence/Pair/Triple、
+ * Date/Calendar/URI/URL/Class<*>、Bundle/SparseArray/Intent/WeakReference；
+ * 循环引用输出 @ref 标记。
  *
- * 支持的类型：
- * - 基本类型及其包装类、String、Char
- * - Enum（输出 name + ordinal）
- * - 数组（包括所有基本类型数组与对象数组）
- * - Iterable / Map / Sequence / Pair / Triple
- * - Date / Calendar / URI / URL / Class<*>
- * - Android: Bundle / SparseArray / Intent / WeakReference
- * - 任意对象：通过反射遍历所有实例字段递归序列化
- * - 循环引用检测（输出 @ref 标记）
- *
- * @param maxDepth 最大递归深度，防止循环引用导致栈溢出，默认3层
- * @param withSuper 是否包含父类字段，默认true
- * @param prettyPrint 是否格式化输出，默认false（紧凑JSON）
- * @return JSON格式字符串
+ * @param maxDepth 最大递归深度，防止循环引用导致栈溢出
  */
 fun Any?.toJsonString(
     maxDepth: Int = 3,

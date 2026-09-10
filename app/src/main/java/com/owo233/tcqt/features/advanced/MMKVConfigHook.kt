@@ -11,8 +11,7 @@ import com.owo233.tcqt.host.QQInterfaces
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * MMKV 配置在宿主启动早期就可能被读取（不一定在 onCreate 内），
- * 放在 EARLY 尽量提前安装。
+ * MMKV 配置在宿主启动早期就可能被读取（不一定在 onCreate 内），故放在 EARLY。
  */
 @RegisterAction
 object MMKVConfigHook : Feature(
@@ -23,14 +22,12 @@ object MMKVConfigHook : Feature(
     priority = ActionPriority.EARLY,
 ) {
 
-    /** 派生 key = `mmkv_config_hook.string.saveConfig`。 */
     private val saveConfig by stringOption(
         settingKey = "string.saveConfig",
         name = "保存的配置",
         placeholder = $$"<key>:<boolean>\ne.g: FROM_EXP$uin:true\n一行一个配置项",
     )
 
-    /** 沿用原来的 lazy 语义：首次读取配置时解析一次并缓存。 */
     private val configMap: Map<String, String> by lazy {
         val map = ConcurrentHashMap<String, String>()
         saveConfig.lines()

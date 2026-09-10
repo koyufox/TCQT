@@ -7,15 +7,13 @@ import com.google.protobuf.UnknownFieldSet
 /**
  * Controls how schema-free length-delimited fields are represented.
  *
- * [COMPATIBLE] restores the convenient behavior used by the original library:
- * printable UTF-8 data remains [ProtoByteString], while non-text payloads that
- * are valid protobuf messages are recursively decoded as [ProtoMap]. This lets
- * existing code keep using paths such as `message[6, 2]` and runtime checks such
- * as `value is ProtoMap`.
+ * [COMPATIBLE]: printable UTF-8 stays [ProtoByteString], while non-text payloads that parse as
+ * protobuf messages are recursively decoded into [ProtoMap] — so paths like `message[6, 2]`
+ * and checks like `value is ProtoMap` keep working.
  *
- * [WIRE_PRESERVING] never guesses the logical meaning of a length-delimited
- * field. Every such field remains [ProtoByteString], because strings, bytes,
- * embedded messages and packed repeated fields share the same wire type.
+ * [WIRE_PRESERVING]: never guesses a length-delimited field's meaning; every one stays
+ * [ProtoByteString], because strings, bytes, embedded messages and packed repeated fields
+ * share the same wire type.
  */
 enum class ProtoDecodeMode {
     COMPATIBLE,
@@ -27,12 +25,9 @@ object ProtoUtils {
     /**
      * Decodes a protobuf stream without a descriptor.
      *
-     * The default [ProtoDecodeMode.COMPATIBLE] mode preserves the original
-     * proto2json API experience by recursively decoding likely embedded
-     * messages. Use [ProtoDecodeMode.WIRE_PRESERVING] for wire inspection or
-     * whenever automatic message detection is undesirable.
-     *
-     * Scalar wire types are always preserved with RAW_* number types.
+     * Defaults to [ProtoDecodeMode.COMPATIBLE] (recursively decodes likely embedded messages);
+     * use [ProtoDecodeMode.WIRE_PRESERVING] for wire inspection. Scalar wire types are always
+     * preserved with RAW_* number types.
      */
     @JvmOverloads
     fun decodeFromByteArray(
@@ -249,9 +244,8 @@ object ProtoUtils {
             return ProtoByteString(value)
         }
 
-        // Keep text as bytes so existing asUtf8String calls and string/bytes
-        // semantics remain stable. Embedded message payloads normally contain
-        // non-printable tag bytes, so they proceed to recursive parsing below.
+        // Keep text as bytes so asUtf8String and string/bytes semantics stay stable; embedded
+        // messages contain non-printable tag bytes, so they fall through to parsing below.
         if (value.isPrintableUtf8()) {
             return ProtoByteString(value)
         }

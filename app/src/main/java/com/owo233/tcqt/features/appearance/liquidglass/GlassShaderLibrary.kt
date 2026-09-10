@@ -5,8 +5,8 @@ package com.owo233.tcqt.features.appearance.liquidglass
  *
  * 折射透镜基于圆角矩形的有向距离场（SDF）：先由 [SDF_SOURCE] 计算像素到矩形边缘的
  * 带符号距离，再在距边缘一个「折射带」宽度内，按带内位置的圆弧映射曲线求出偏移量，
- * 沿 SDF 梯度方向对背景采样坐标施加位移，从而产生边缘内凹、中间通透的透镜效果。
- * 距边缘超过折射带的区域直接原样采样，保证玻璃中心不被扭曲。
+ * 沿 SDF 梯度方向对背景采样坐标施加位移，产生边缘内凹、中间通透的透镜效果。
+ * 距边缘超过折射带的区域原样采样，保证玻璃中心不被扭曲。
  */
 internal object GlassShaderLibrary {
 
@@ -39,8 +39,8 @@ internal object GlassShaderLibrary {
     /**
      * 静置玻璃药丸的透镜。
      *
-     * 采样链为「饱和度提升 → 高斯模糊 → 边缘折射」，其中饱和与模糊由
-     * [android.graphics.RenderEffect] 链式效果完成，本程序仅负责最外层的折射。
+     * 采样链为「饱和度提升 → 高斯模糊 → 边缘折射」；饱和与模糊由
+     * [android.graphics.RenderEffect] 链式效果完成，本程序只负责最外层的折射。
      */
     val PILL_LENS = """
         uniform shader content;
@@ -69,11 +69,10 @@ internal object GlassShaderLibrary {
     """.trimIndent()
 
     /**
-     * 液滴透镜：在药丸透镜的基础上增加色散。
+     * 液滴透镜：在药丸透镜基础上增加色散。
      *
-     * 沿折射方向按光谱顺序（红→紫）以不同偏移量多次采样背景并加权混合，
-     * 使折射边缘出现细微的色散条纹。色散强度由对角坐标乘积调制，
-     * 越靠近四角越明显，与真实玻璃棱镜的表现一致。
+     * 沿折射方向按光谱顺序（红→紫）以不同偏移量多次采样背景并加权混合，形成折射边缘的
+     * 色散条纹。色散强度由对角坐标乘积调制，越靠近四角越明显，与真实玻璃棱镜一致。
      */
     val DROPLET_LENS = """
         uniform shader content;
@@ -123,9 +122,8 @@ internal object GlassShaderLibrary {
     /**
      * 交互高光：跟随液滴位置的一层径向辉光。
      *
-     * 以液滴中心为圆心、按半径的平滑阶梯衰减输出白色，配合 Plus 混合模式
-     * 叠加到玻璃表面，在拖拽时产生局部泛光。alpha 以预乘形式返回，
-     * 保证实际混合强度与设定的透明度一致。
+     * 以液滴中心为圆心、按半径平滑阶梯衰减输出白色，配合 Plus 混合模式叠加到玻璃表面。
+     * alpha 以预乘形式返回，保证实际混合强度与设定的透明度一致。
      */
     val INTERACTIVE_HIGHLIGHT = """
         uniform float2 size;
@@ -143,8 +141,7 @@ internal object GlassShaderLibrary {
     /**
      * 内阴影：从玻璃边缘向内平滑衰减的暗色渐变。
      *
-     * 直接复用 SDF 距离做 smoothstep 衰减，避免描边式模拟产生的生硬内边。
-     * 衰减呈平方曲线，使阴影在边缘处最浓、向内迅速消散。
+     * 复用 SDF 距离做 smoothstep 衰减；衰减取平方曲线，使阴影在边缘处最浓、向内迅速消散。
      */
     val INNER_SHADOW = """
         uniform float2 size;
