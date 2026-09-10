@@ -6,10 +6,10 @@ import com.android.dx.DexMaker
 import com.android.dx.FieldId
 import com.android.dx.MethodId
 import com.android.dx.TypeId
-import com.owo233.tcqt.loader.api.Chain
-import com.owo233.tcqt.loader.api.HookParam
-import com.owo233.tcqt.loader.api.Invoker
-import com.owo233.tcqt.loader.api.Unhook
+import com.owo233.tcqt.core.hook.Chain
+import com.owo233.tcqt.core.hook.HookParam
+import com.owo233.tcqt.core.hook.Invoker
+import com.owo233.tcqt.core.hook.Unhook
 import dalvik.system.DexFile
 import dalvik.system.InMemoryDexClassLoader
 import java.lang.reflect.Constructor
